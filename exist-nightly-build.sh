@@ -4,8 +4,8 @@ set -e
 
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
-EXIST_NIGHTLY_SRC=/opt/exist-nightly-build
-EXIST_NIGHTLY_DEST=/data/www/static.adamretter.org.uk/exist-nightly
+EXIST_NIGHTLY_SRC=/usr/local/exist-nightly-build
+EXIST_NIGHTLY_DEST=/www-data/static.adamretter.org.uk/exist-nightly
 
 if [ ! -d "$EXIST_NIGHTLY_SRC" ]; then
 	mkdir -p $EXIST_NIGHTLY_SRC
@@ -22,4 +22,4 @@ git rebase origin/develop
 # git stash pop
 
 ./build.sh installer installer-exe app
-cp -v installer/eXist-db-setup-*.jar installer/eXist-db-setup-*.exe dist/eXist-db-*.dmg $EXIST_NIGHTLY_SRC
+mv -v installer/eXist-db-setup-*.jar installer/eXist-db-setup-*.exe dist/eXist-db-*.dmg $EXIST_NIGHTLY_DEST
