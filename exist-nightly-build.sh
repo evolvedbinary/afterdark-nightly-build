@@ -14,6 +14,7 @@ fi
 
 cd $EXIST_NIGHTLY_SRC
 ./build.sh clean
+rm -rf $EXIST_NIGHTLY_SRC/extensions/modules/lib
 
 ## stash can be used if we have any build changes locally
 # git stash save "local build fixes"
