@@ -24,3 +24,6 @@ git rebase origin/develop
 
 ./build.sh installer installer-exe app
 mv -v installer/eXist-db-setup-*.jar installer/eXist-db-setup-*.exe dist/eXist-db-*.dmg $EXIST_NIGHTLY_DEST
+
+## Cleanp any nightly builds (.dmg, .exe, .jar files) that are older than 2 months
+find $EXIST_NIGHTLY_DEST -mtime +62 -type f \( -iname "*.exe" -or -iname "*.dmg" -or -iname "*.jar" \) -exec rm {} \;
