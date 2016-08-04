@@ -16,11 +16,7 @@ sudo ln -s /usr/bin/x86_64-w64-mingw32-ld /usr/local/launch4j-3.5/bin/ld
 3. Install mkfs.hfsplus (for creating Mac DMG builds)
 sudo apt-get install hfsprogs
 
-4. Create the file /usr/local/exist-nightly-build/local.build.properties:
-```
-izpack.dir = /usr/local/izpack-4.3.5
-launch4j.dir = /usr/local/launch4j-3.5
-```
+4. Copy the file `exist-patches/local.build.properties` to `/usr/local/exist-nightly-build/local.build.properties` and modify appropriately:
 
 5. Create the file /usr/local/exist-nightly-build/extensions/local/build.properties and enable the modules you wish to include in the build.
 
