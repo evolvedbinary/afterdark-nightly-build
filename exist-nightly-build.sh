@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-
+set -x 
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 EXIST_NIGHTLY_SRC=/usr/local/exist-nightly-build
@@ -16,12 +16,16 @@ cd $EXIST_NIGHTLY_SRC
 ./build.sh clean
 rm -rf $EXIST_NIGHTLY_SRC/extensions/modules/lib
 
+# ignore any jars which were previously modified due to signing
+git checkout -- lib/
+
 ## stash can be used if we have any build changes locally
 # git stash save "local build fixes"
 git fetch origin
 git rebase origin/develop
 # git stash pop
 
+./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core
 ./build.sh installer installer-exe app
 mv -v installer/eXist-db-setup-*.jar installer/eXist-db-setup-*.exe dist/eXist-db-*.dmg $EXIST_NIGHTLY_DEST
 
