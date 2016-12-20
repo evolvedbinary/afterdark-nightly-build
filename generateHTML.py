@@ -28,7 +28,7 @@ f.write("<table id=\"myTable\" class=\"tablesorter\">\n\
 <thead> \n\
 <tr> \n\
 <th>Date</th> \n\
-<th>Hash</th> \n\
+<th>Git Hash</th> \n\
 <th>Downloads</th> \n\
 <th>Size</th> \n\
 </tr> \n\
@@ -59,7 +59,7 @@ for id in ids:
 
     f.write("<tr>\n")
     f.write("<td>" + changeDate + "</td>\n")
-    f.write("<td>" + id + "</td>\n")
+    f.write("<td><a href=\"https://github.com/eXist-db/exist/commit/" + id + "\">" + id + "</a></td>\n")
     f.write("<td>")
     for type in types.keys():
         f.write("<a href=\"" + str(types.get(type)) + "\">" + type + "</a> \n")
