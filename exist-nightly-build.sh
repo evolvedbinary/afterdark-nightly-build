@@ -2,6 +2,11 @@
 
 set -e
 set -x 
+
+pushd `dirname $0` > /dev/null
+SCRIPTPATH=`pwd -P`
+popd > /dev/null
+
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 EXIST_NIGHTLY_SRC=/usr/local/exist-nightly-build
@@ -33,5 +38,5 @@ mv -v installer/eXist-db-setup-*.jar installer/eXist-db-setup-*.exe dist/eXist-d
 find $EXIST_NIGHTLY_DEST -mtime +62 -type f \( -iname "*.exe" -or -iname "*.dmg" -or -iname "*.jar" \) -exec rm {} \;
 
 ## generate HTML page
-cp index.html $EXIST_NIGHTLY_DEST
-python generateHTML.py $EXIST_NIGHTLY_DEST
+cp -v "${SCRIPTPATH}/index.html" $EXIST_NIGHTLY_DEST
+python "${SCRIPTPATH}/generateHTML.py" $EXIST_NIGHTLY_DEST
