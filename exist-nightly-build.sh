@@ -31,11 +31,11 @@ git rebase origin/develop
 # git stash pop
 
 ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core
-./build.sh installer installer-exe app
-mv -v installer/eXist-db-setup-*.jar installer/eXist-db-setup-*.exe dist/eXist-db-*.dmg $EXIST_NIGHTLY_DEST
+./build.sh installer app
+mv -v installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg $EXIST_NIGHTLY_DEST
 
-## cleanup any nightly builds (.dmg, .exe, .jar files) that are older than 2 months
-find $EXIST_NIGHTLY_DEST -mtime +62 -type f \( -iname "*.exe" -or -iname "*.dmg" -or -iname "*.jar" \) -exec rm {} \;
+## cleanup any nightly builds (.dmg, .jar files) that are older than 2 months
+find $EXIST_NIGHTLY_DEST -mtime +62 -type f \( -iname "*.dmg" -or -iname "*.jar" \) -exec rm {} \;
 
 ## generate HTML page
 cp -v "${SCRIPTPATH}/index.html" $EXIST_NIGHTLY_DEST
