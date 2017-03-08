@@ -39,4 +39,4 @@ find $EXIST_NIGHTLY_DEST -mtime +62 -type f \( -iname "*.dmg" -or -iname "*.jar"
 
 ## generate HTML page
 cp -v "${SCRIPTPATH}/index.html" $EXIST_NIGHTLY_DEST
-python "${SCRIPTPATH}/generateHTML.py" $EXIST_NIGHTLY_DEST
+python "${SCRIPTPATH}/generateHTML.py" $EXIST_NIGHTLY_DEST $EXIST_NIGHTLY_SRC
