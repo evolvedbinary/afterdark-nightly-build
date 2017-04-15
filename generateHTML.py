@@ -59,7 +59,8 @@ for buildLabel in buildLabels:
             if changeDate > recentDate:
                 recentDate = changeDate
 
-            gitProcess = subprocess.Popen(["git", "rev-list", "-1", "--before=" + buildLabel, "develop"], cwd=exist_git_clone, stdout=subprocess.PIPE)
+            gitBeforeDate =  datetime.strptime(buildLabel, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+            gitProcess = subprocess.Popen(["git", "rev-list", "-1", "--before=\"" + gitBeforeDate + "\"", "develop"], cwd=exist_git_clone, stdout=subprocess.PIPE)
             output = gitProcess.communicate()[0]
             gitHash = output.strip()[:7]
 
