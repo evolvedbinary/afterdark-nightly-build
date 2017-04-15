@@ -34,8 +34,8 @@ git rebase origin/develop
 ./build.sh installer app
 mv -v installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg $EXIST_NIGHTLY_DEST
 
-## cleanup any nightly builds (.dmg, .jar files) that are older than 2 months
-find $EXIST_NIGHTLY_DEST -mtime +62 -type f \( -iname "*.dmg" -or -iname "*.jar" \) -exec rm {} \;
+## cleanup any nightly builds (.dmg, .jar files) that are older than 2 weeks
+find $EXIST_NIGHTLY_DEST -mtime +15 -type f \( -iname "*.dmg" -or -iname "*.jar" \) -exec rm {} \;
 
 ## generate HTML page
 cp -v "${SCRIPTPATH}/index.html" $EXIST_NIGHTLY_DEST
