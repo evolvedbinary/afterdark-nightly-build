@@ -9,7 +9,7 @@ $ sudo git clone https://github.com/exist-db/exist.git /usr/local/exist-nightly-
 $ sudo chown -R `whoami` /usr/local/exist-nightly-build
 ```
 
-2. Download and install IzPack 4.3.5 (http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar)
+2. Download and install IzPack 4.3.5 (http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar) to `/usr/local/izpack-4.3.5`.
 
 3. Install `mkfs.hfsplus` (for creating Mac DMG builds):
 
