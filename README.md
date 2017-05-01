@@ -2,14 +2,24 @@
 Scripts for performing a nightly build of eXist
 
 ## Prerequisites
-1. Download and install IzPack 4.3.5 (http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar)
+1. Clone the latest eXist-db source code to `/usr/local/exist-nightly-build`
 
-2. Install mkfs.hfsplus (for creating Mac DMG builds)
-sudo apt-get install hfsprogs
+```bash
+$ sudo git clone https://github.com/exist-db/exist.git /usr/local/exist-nightly-build
+$ sudo chown -R `whoami` /usr/local/exist-nightly-build
+```
 
-3. Copy the file `exist-patches/local.build.properties` to `/usr/local/exist-nightly-build/local.build.properties` and modify appropriately:
+2. Download and install IzPack 4.3.5 (http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar)
 
-4. Create the file `/usr/local/exist-nightly-build/extensions/local/build.properties` and enable the modules you wish to include in the build.
+3. Install `mkfs.hfsplus` (for creating Mac DMG builds):
+
+```bash
+$ sudo apt-get install hfsprogs
+```
+
+4. Copy the file `exist-patches/local.build.properties` to `/usr/local/exist-nightly-build/local.build.properties` and modify appropriately.
+
+5. Copy the file `exist-patches/extensions.local.build.properties` to `/usr/local/exist-nightly-build/extensions/local.build.properties`. You can modify this if you want to add/remove any other modules which should be included in the build.
 
 ## Installing
 
