@@ -1,5 +1,7 @@
 # exist-nightly-build
-Scripts for performing a nightly build of eXist
+Scripts for performing a nightly build of eXist.
+
+You can find the nightly builds output from this script for the eXist-db project at: http://static.adamretter.org.uk/exist-nightly/
 
 ## Prerequisites
 1. Clone the latest eXist-db source code to `/usr/local/exist-nightly-build`
