@@ -17,7 +17,7 @@ for (dirpath, dirnames, filenames) in walk(location):
 
 
 # get hashes
-buildLabelPattern = re.compile("eXist-db(?:-setup)?-[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT\+([0-9]{14})\.(?:jar|dmg)")
+buildLabelPattern = re.compile("eXist-db(?:-setup)?-[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT\+([0-9]{12,14})\.(?:jar|dmg)")
 buildLabels = set()
 for name in existFiles:
     groups = buildLabelPattern.match(name).groups()
