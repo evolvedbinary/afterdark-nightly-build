@@ -40,6 +40,7 @@ f.write("<table id=\"myTable\" class=\"tablesorter\">\n\
 
 # iterate over hashes
 fileExtPattern = re.compile(".+\.(jar|dmg)$")
+labelPattern = re.compile("eXist-db(?:-setup)?-(.+)\.(?:jar|dmg)$")
 for buildLabel in buildLabels:
 
     # group files per download
@@ -64,10 +65,13 @@ for buildLabel in buildLabels:
             output = gitProcess.communicate()[0]
             gitHash = output.strip()[:7]
 
+            labelGroups = labelPattern.match(file).groups()
+            label = labelGroups[0]
+
 
     f.write("<tr>\n")
     f.write("<td>" + changeDate + "</td>\n")
-    f.write("<td>" + buildLabel + "</td>\n")
+    f.write("<td>" + label + "</td>\n")
     f.write("<td><a href=\"https://github.com/eXist-db/exist/commit/" + gitHash + "\">" + gitHash + "</a></td>\n")
     f.write("<td>")
     for type in types.keys():
