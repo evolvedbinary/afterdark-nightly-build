@@ -30,7 +30,7 @@ git fetch origin
 git rebase origin/develop
 # git stash pop
 
-./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core
+./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
 ./build.sh installer app
 mv -v installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg $EXIST_NIGHTLY_DEST
 
