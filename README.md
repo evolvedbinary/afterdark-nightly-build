@@ -1,46 +1,67 @@
-# exist-nightly-build
-Scripts for performing a nightly build of eXist.
+# eXist-db Nightly Builds
+Scripts for performing a nightly build of eXist-db dist and Maven artifacts.
 
 You can find the nightly builds output from this script for the eXist-db project at: http://static.adamretter.org.uk/exist-nightly/
 
-## Prerequisites
-1. Clone the latest eXist-db source code to `/usr/local/exist-nightly-build`
+## Requirements
+1. JDK 8.
+    e.g. `sudo apt-get instal openjdk-8-jdk`
+
+2. Git tools.
+    e.g. `sudo apt-get install git`
+
+3. HFS+ filesystem support. Needed for building macOS DMG packages.
+    e.g. `sudo apt-get install hfsprogs`
+
+4. IzPack 4.3.5. Needed for building the eXist-db Installer.
+   1. Download - http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar
+   2. Install - `java -jar IzPack-install-4.3.5.jar`
+
+5. Maven 3.5.3 (or newer).
+    1. Download from https://maven.apache.org/download.cgi and untar
+    2. Add the `bin/` folder of the untarred folder to the `$PATH` environment variable.
+
+6. Sendmail command (Optional - needed for email notifications).
+    1. [nullmailer](https://github.com/bruceg/nullmailer) can be a good choice if you already have an SMTP relay server that you want to use.
+    2. e.g. `sudo apt-get install rsyslog-gnutls rsyslog-gssapi nullmailer`
+    3. Configure nullmailer's SMTP relay server in `/etc/nullmailer/remotes`.
+
+7. uuencode command (Optional - needed for email attachment of log files).
+    e.g. `sudo apt-get install sharutils`
+
+
+## Setup
+1. Clone this repository:
 
 ```bash
-$ sudo git clone https://github.com/exist-db/exist.git /usr/local/exist-nightly-build
-$ sudo chown -R `whoami` /usr/local/exist-nightly-build
+$ sudo git clone https://github.com/adamretter/exist-nightly-build.git
 ```
 
-2. Download and install IzPack 4.3.5 (http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar) to `/usr/local/izpack-4.3.5`.
+2. Create an `exist-nightly-build/local.build.properties` file for holding eXist-db release settings:
+```
+keystore.file=/path/to/your/exist-nightly-build_key.store
+keystore.alias=exist-nightly-build
+keystore.password=<your password>
 
-3. Install `mkfs.hfsplus` (for creating Mac DMG builds):
+izpack.dir = /path-to/your/izpack-4.3.5
+```
+
+3. Further configuration options can be found in the top of each `.sh` and `.py` script.
+
+## Use
+1. You can test as a one-off by running:
 
 ```bash
-$ sudo apt-get install hfsprogs
+./build.sh --cleanup --mail-from your-system@domain.com --rcpt-to you@domain.com
 ```
 
-4. Copy the file `exist-patches/local.build.properties` to `/usr/local/exist-nightly-build/local.build.properties` and modify appropriately.
-
-5. Copy the file `exist-patches/extensions.local.build.properties` to `/usr/local/exist-nightly-build/extensions/local.build.properties`. You can modify this if you want to add/remove any other modules which should be included in the build.
-
-## Installing
-
-1. Edit the settings at the top of `exist-nightly-build.sh` to reflect your system, e.g. 
-
-```bash
-export JAVA_HOME=/usr/lib/jvm/java-8-oracle
-
-EXIST_NIGHTLY_SRC=/usr/local/exist-nightly-build
-EXIST_NIGHTLY_DEST=/www-data/static.adamretter.org.uk/exist-nightly
-```
-
-2. Run it! ...or Can be scheduled from cron with something like:
+2. ...or Can be scheduled from cron with something like:
 
 ```
-0 4 * * * /home/some-user/exist-nightly-build/exist-nightly-build.sh >> /home/some-user/exist-nightly-build.log 2>&1
+0 4 * * * /home/some-user/exist-nightly-build/build.sh > /home/some-user/exist-nightly-build.log 2>&1
 ```
 
-3. If you are running it via cron, creating the Mac DMG packages requires `sudo` access without promiting for a password as such you will need to make an entry in sudoers similar to:
+**NOTE**: If you are running it via cron, creating the Mac DMG packages requires `sudo` access without promiting for a password as such you will need to make an entry in sudoers similar to:
 
 ```
 YOUR-USERNAME-OF-CRON-USER ALL = NOPASSWD: /bin/mount, /bin/umount
