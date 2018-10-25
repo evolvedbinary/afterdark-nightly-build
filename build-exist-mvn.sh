@@ -18,9 +18,6 @@ MVN_GIT_BRANCH="master"
 EXIST_SNAPSHOT_BASE="5.0.0"
 MIGRATE_FROM_POM_VERSION="20181024"
 
-## can be used if local changes are required
-GIT_STASH="FALSE"
-
 ## stop on first error!
 set -e
 
@@ -40,7 +37,7 @@ case $i in
     BUILD_DIR="$2"
     shift
     ;;
-    -o|--ouput-dir)
+    -o|--output-dir)
     OUTPUT_DIR="$2"
     shift
     ;;
@@ -58,6 +55,10 @@ case $i in
     ;;
     -e|--exist-build-dir)
     EXIST_BUILD_DIR="$2"
+    shift
+    ;;
+    -f|--from-version)
+    MIGRATE_FROM_POM_VERSION="$2"
     shift
     ;;
     *)  # unknown option
@@ -121,7 +122,7 @@ else
 	pushd ${BUILD_DIR}
 
 	# update the source from the git repo
-	if [ "${GIT_STASH}" = "TRUE" ]; then
+	if [ -n "${GIT_STASH}" ]; then
 		git stash save "local build fixes"
 	fi
 
@@ -129,7 +130,7 @@ else
 	git checkout $MVN_GIT_BRANCH
 	git rebase "origin/${MVN_GIT_BRANCH}"
 
-	if [ "${GIT_STASH}" = "TRUE" ]; then
+	if [ -n "${GIT_STASH}" ]; then
 		git stash pop
 	fi
 fi
@@ -141,7 +142,12 @@ mv -v $EXIST_BUILD_DIR/local.build.properties $EXIST_BUILD_DIR/local.build.prope
 
 # build exist-db from source
 echo -e "Building eXist-db from source...\n"
-./update.sh --build-dir "${BUILD_DIR}" --output-dir "${OUTPUT_DIR}" --exist-build-dir "${EXIST_BUILD_DIR}" --tag "${EXIST_SNAPSHOT_BASE}" --snapshot
+./update.sh \
+	--build-dir "${BUILD_DIR}" \
+	--output-dir "${OUTPUT_DIR}" \
+       	--exist-build-dir "${EXIST_BUILD_DIR}" \
+	--tag "${EXIST_SNAPSHOT_BASE}" \
+	--snapshot
 
 # unhide the local.build.properties file
 mv -v $EXIST_BUILD_DIR/local.build.properties.BAK $EXIST_BUILD_DIR/local.build.properties
@@ -149,12 +155,19 @@ mv -v $EXIST_BUILD_DIR/local.build.properties.BAK $EXIST_BUILD_DIR/local.build.p
 # migrate the pom versions
 SNAPSHOT_VERSION="$(cat $BUILD_DIR/SNAPSHOT)"
 echo -e "Migrating eXist-db POMs from ${MIGRATE_FROM_POM_VERSION} to ${SNAPSHOT_VERSION}...\n"
-./migrate-pom-versions.sh --build-dir "${BUILD_DIR}" --output-dir "${OUTPUT_DIR}" --from-version "${MIGRATE_FROM_POM_VERSION}" --to-version "${SNAPSHOT_VERSION}"
+./migrate-pom-versions.sh \
+	--build-dir "${BUILD_DIR}" \
+	--output-dir "${OUTPUT_DIR}" \
+	--from-version "${MIGRATE_FROM_POM_VERSION}" \
+	--to-version "${SNAPSHOT_VERSION}"
 rm $BUILD_DIR/SNAPSHOT
 
 # upload the snapshots
 echo -e "Uploading the SNAPSHOT ${SNAPSHOT_VERSION}...\n"
-./upload.sh --ouput-dir "${OUTPUT_DIR}" --snapshot --artifact-version "${SNAPSHOT_VERSION}"
+./upload.sh \
+	--output-dir "${OUTPUT_DIR}" \
+	--snapshot \
+	--artifact-version "${SNAPSHOT_VERSION}"
 
 # delete the local copy of the snapshot
 rm -rf "${OUTPUT_DIR}"

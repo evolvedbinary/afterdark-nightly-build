@@ -14,9 +14,6 @@ OUTPUT_DIR="${TMP_DIR}/target"
 EXIST_GIT_REPO="git@github.com:eXist-db/exist.git"
 EXIST_GIT_BRANCH="develop"
 
-## can be used if local changes are required
-GIT_STASH="FALSE"
-
 ## stop on first error!
 set -e
 
@@ -36,7 +33,7 @@ case $i in
     BUILD_DIR="$2"
     shift
     ;;
-    -o|--ouput-dir)
+    -o|--output-dir)
     OUTPUT_DIR="$2"
     shift
     ;;
@@ -50,6 +47,10 @@ case $i in
     ;;
     -s|--git-stash)
     GIT_STASH="TRUE"
+    shift
+    ;;
+    --skip-build)
+    SKIP_BUILD="TRUE"
     shift
     ;;
     *)  # unknown option
@@ -120,7 +121,7 @@ else
 	git checkout -- tools/jetty/lib/
 
 	# update the source from the git repo
-	if [ "${GIT_STASH}" = "TRUE" ]; then
+	if [ -n "${GIT_STASH}" ]; then
 		git stash save "local build fixes"
 	fi
 
@@ -128,7 +129,7 @@ else
 	git checkout $EXIST_GIT_BRANCH
 	git rebase "origin/${EXIST_GIT_BRANCH}"
 
-	if [ "${GIT_STASH}" = "TRUE" ]; then
+	if [ -n "${GIT_STASH}" ]; then
 		git stash pop
 	fi
 fi
@@ -144,18 +145,20 @@ if [ $GREP_STATUS -ne 0 ]; then
   exit 3
 fi
 
-# actually do the build
-./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
-./build.sh installer app dist-war dist-bz2
+if [ ! -n "$SKIP_BUILD" ]; then
+  # actually do the build
+  ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
+  ./build.sh installer app dist-war dist-bz2
 
-# generate checksums for the built artifacts
-for file in installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg dist/exist-*.war dist/eXist-*.tar.bz2 ; do
-	sha256sum --binary $file > $file.sha256
-done
+  # generate checksums for the built artifacts
+  for file in installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg dist/exist-*.war dist/eXist-*.tar.bz2 ; do
+    sha256sum --binary $file > $file.sha256
+  done
 
-# move the built artifacts to the output dir
-mkdir -p $OUTPUT_DIR
-mv -v installer/eXist-db-setup-*.jar* dist/eXist-db-*.dmg* dist/exist-*.war* dist/eXist-*.tar.bz2* $OUTPUT_DIR
+  # move the built artifacts to the output dir
+  mkdir -p $OUTPUT_DIR
+  mv -v installer/eXist-db-setup-*.jar* dist/eXist-db-*.dmg* dist/exist-*.war* dist/eXist-*.tar.bz2* $OUTPUT_DIR
+fi
 
 # restore the cwd
 popd

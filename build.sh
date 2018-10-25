@@ -5,14 +5,18 @@
 ###
 
 ## Default paths. Can be overriden by command line
-## args --build-dir and/or --output-dir
+## args --log-dir, --exist-build-dir, --exist-output-dir,
+## --mvn-build-dir and/or --mvn-output-dir
 TMP_ROOT_DIR="/tmp/exist-nightly-build"
+LOG_DIR="${TMP_ROOT_DIR}"
 EXIST_TMP_DIR="${TMP_ROOT_DIR}/dist"
 EXIST_BUILD_DIR="${EXIST_TMP_DIR}/source"
 EXIST_OUTPUT_DIR="${EXIST_TMP_DIR}/target"
 MVN_TMP_DIR="${TMP_ROOT_DIR}/mvn"
 MVN_BUILD_DIR="${MVN_TMP_DIR}/source"
 MVN_OUTPUT_DIR="${MVN_TMP_DIR}/target"
+
+GENERATE_HTML_TABLE="TRUE"
 
 ## stop on first error!
 set -e
@@ -39,6 +43,54 @@ do
     ;;
     -c|--cleanup)
     CLEANUP="TRUE"
+    shift
+    ;;
+    --no-html-table)
+    GENERATE_HTML_TABLE="FALSE"
+    shift
+    ;;
+    --exist-git-repo)
+    EXIST_GIT_REPO="$2"
+    shift
+    ;;
+    --exist-git-branch)
+    EXIST_GIT_BRANCH="$2"
+    shift
+    ;;
+    --exist-skip-build)
+    EXIST_SKIP_BUILD="TRUE"
+    shift
+    ;;
+    --exist-build-dir)
+    EXIST_BUILD_DIR="$2"
+    shift
+    ;;
+    --exist-output-dir)
+    EXIST_OUTPUT_DIR="$2"
+    shift
+    ;;
+    --mvn-git-repo)
+    MVN_GIT_REPO="$2"
+    shift
+    ;;
+    --mvn-git-branch)
+    MVN_GIT_BRANCH="$2"
+    shift
+    ;;
+    --mvn-build-dir)
+    MVN_BUILD_DIR="$2"
+    shift
+    ;;
+    --mvn-output-dir)
+    MVN_OUTPUT_DIR="$2"
+    shift
+    ;;
+    --mvn-from-version)
+    MVN_FROM_VERSION="$2"
+    shift
+    ;;
+    --log-dir)
+    LOG_DIR="$2"
     shift
     ;;
     *)  #unknown option
@@ -69,15 +121,20 @@ EOM
 
 TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
-mkdir -p $TMP_ROOT_DIR
+echo -e "Starting build at ${TIMESTAMP}...\n"
+
+mkdir -p $EXIST_OUTPUT_DIR
 pushd $SCRIPT_DIR
 
 # cleanup old dist artifacts
 if [ -n "${CLEANUP}" ]; then
-  CLEAN_DIST_LOG="${TMP_ROOT_DIR}/cleanup-exist-dists.${TIMESTAMP}.log"
+  CLEAN_DIST_LOG="${LOG_DIR}/cleanup-exist-dists.${TIMESTAMP}.log"
   echo -e "Cleaning up old eXist dist artifacts, log file: $CLEAN_DIST_LOG ...\n"
   set +e
-  ${SCRIPT_DIR}/cleanup-exist-dists.sh --output-dir "$EXIST_OUTPUT_DIR" --days 15 > $CLEAN_DIST_LOG 2>&1
+  ${SCRIPT_DIR}/cleanup-exist-dists.sh \
+	  --output-dir "$EXIST_OUTPUT_DIR" \
+	  --days 15 \
+	  > $CLEAN_DIST_LOG 2>&1
   CLEAN_DIST_STATUS=$?
   set -e
   if [ $CLEAN_DIST_STATUS -eq 0 ]; then
@@ -93,10 +150,16 @@ if [ -n "${CLEANUP}" ]; then
 fi
 
 # build the dist artifacts
-BUILD_DIST_LOG="${TMP_ROOT_DIR}/build-exist-dist.${TIMESTAMP}.log"
+BUILD_DIST_LOG="${LOG_DIR}/build-exist-dist.${TIMESTAMP}.log"
 echo -e "Building eXist dist artifacts, log file: $BUILD_DIST_LOG ...\n"
 set +e
-${SCRIPT_DIR}/build-exist-dist.sh --build-dir "$EXIST_BUILD_DIR" --output-dir "$EXIST_OUTPUT_DIR" > $BUILD_DIST_LOG 2>&1
+${SCRIPT_DIR}/build-exist-dist.sh \
+	${EXIST_GIT_REPO:+ --git-repo "${EXIST_GIT_REPO}"} \
+	${EXIST_GIT_BRANCH:+ --git-branch "${EXIST_GIT_BRANCH}"} \
+	${EXIST_SKIP_BUILD:+ --skip-build} \
+	--build-dir "$EXIST_BUILD_DIR" \
+	--output-dir "$EXIST_OUTPUT_DIR" \
+	> $BUILD_DIST_LOG 2>&1
 BUILD_DIST_STATUS=$?
 set -e
 if [ $BUILD_DIST_STATUS -eq 0 ]; then
@@ -110,29 +173,41 @@ else
   exit 5
 fi
 
-# generate python html table for eXist dist artifacts
-BUILD_DIST_HTML_LOG="${TMP_ROOT_DIR}/build-exist-dist-html.${TIMESTAMP}.log"
-echo -e "Building eXist dist HTML table, log file: $BUILD_DIST_HTML_LOG ...\n"
-set +e
-${SCRIPT_DIR}/generate-exist-dist-html-table.py --build-dir "$EXIST_BUILD_DIR" --output-dir "$EXIST_OUTPUT_DIR" > $BUILD_DIST_HTML_LOG 2>&1
-BUILD_DIST_HTML_STATUS=$?
-set -e
-if [ $BUILD_DIST_HTML_STATUS -eq 0 ]; then
-  echo -e "OK.\n"
-  rm $BUILD_DIST_HTML_LOG
-else
-  echo -e "Error: Failed to build eXist dist HTML table. status: $BUILD_DIST_HTML_STATUS\n"
-  if [ -n "${RCPT_TO}" ]; then
-    email_log "Building eXist dist HTML table failed" $BUILD_DIST_HTML_STATUS $BUILD_DIST_HTML_LOG
+if [ "${GENERATE_HTML_TABLE}" = "TRUE" ]; then
+  # generate python html table for eXist dist artifacts
+  BUILD_DIST_HTML_LOG="${LOG_DIR}/build-exist-dist-html.${TIMESTAMP}.log"
+  echo -e "Building eXist dist HTML table, log file: $BUILD_DIST_HTML_LOG ...\n"
+  set +e
+  ${SCRIPT_DIR}/generate-exist-dist-html-table.py \
+	  --build-dir "$EXIST_BUILD_DIR" \
+	  --output-dir "$EXIST_OUTPUT_DIR" \
+	  > $BUILD_DIST_HTML_LOG 2>&1
+  BUILD_DIST_HTML_STATUS=$?
+  set -e
+  if [ $BUILD_DIST_HTML_STATUS -eq 0 ]; then
+    echo -e "OK.\n"
+    rm $BUILD_DIST_HTML_LOG
+  else
+    echo -e "Error: Failed to build eXist dist HTML table. status: $BUILD_DIST_HTML_STATUS\n"
+    if [ -n "${RCPT_TO}" ]; then
+      email_log "Building eXist dist HTML table failed" $BUILD_DIST_HTML_STATUS $BUILD_DIST_HTML_LOG
+    fi
+    exit 6
   fi
-  exit 6
 fi
 
 # build the mvn artifacts
-BUILD_MVN_LOG="${TMP_ROOT_DIR}/build-exist-mvn.${TIMESTAMP}.log"
+BUILD_MVN_LOG="${LOG_DIR}/build-exist-mvn.${TIMESTAMP}.log"
 echo -e "Building eXist mvn artifacts, log file: $BUILD_MVN_LOG ...\n"
 set +e
-${SCRIPT_DIR}/build-exist-mvn.sh --build-dir "$MVN_BUILD_DIR" --output-dir "$MVN_OUTPUT_DIR" --exist-build-dir "$EXIST_BUILD_DIR" > $BUILD_MVN_LOG 2>&1
+${SCRIPT_DIR}/build-exist-mvn.sh \
+	${MVN_GIT_REPO:+ --git-repo "${MVN_GIT_REPO}"} \
+	${MVN_GIT_BRANCH:+ --git-branch "${MVN_GIT_BRANCH}"} \
+	${MVN_FROM_VERSION:+ --from-version "${MVN_FROM_VERSION}"} \
+	--build-dir "$MVN_BUILD_DIR" \
+	--output-dir "$MVN_OUTPUT_DIR" \
+	--exist-build-dir "$EXIST_BUILD_DIR" \
+	> $BUILD_MVN_LOG 2>&1
 BUILD_MVN_STATUS=$?
 set -e
 if [ $BUILD_MVN_STATUS -eq 0 ]; then
@@ -145,6 +220,9 @@ else
   fi
   exit 7
 fi
+
+
+echo -e "Build complete.\n"
 
 # restore the cwd
 popd

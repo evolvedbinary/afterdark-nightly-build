@@ -24,7 +24,7 @@ do
     DAYS=$2
     shift
     ;;
-    -o|--ouput-dir)
+    -o|--output-dir)
     OUTPUT_DIR="$2"
     shift
     ;;
