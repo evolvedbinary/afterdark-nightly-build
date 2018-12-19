@@ -105,7 +105,7 @@ function email_log {
   LOG_FILE=$3
   LOG_FILE_NAME="$(basename $LOG_FILE)"
 
-  sendmail -f $MAIL_FROM $RCPT_TO <<EOM
+  /usr/sbin/sendmail -f $MAIL_FROM $RCPT_TO <<EOM
 from: $MAIL_FROM
 to: $RCPT_TO
 subject: $SUBJECT
