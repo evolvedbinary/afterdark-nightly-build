@@ -16,7 +16,7 @@ MVN_GIT_REPO="git@github.com:eXist-db/mvn-repo.git"
 MVN_GIT_BRANCH="master"
 
 EXIST_SNAPSHOT_BASE="5.0.0"
-MIGRATE_FROM_POM_VERSION="20181219"
+MIGRATE_FROM_POM_VERSION="5.0.0-RC6"
 
 ## stop on first error!
 set -e
