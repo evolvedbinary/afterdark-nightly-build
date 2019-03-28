@@ -138,7 +138,10 @@ fi
 # actually do the build
 
 # hide the local.build.properties file
-mv -v $EXIST_BUILD_DIR/local.build.properties $EXIST_BUILD_DIR/local.build.properties.BAK
+if [ -e $EXIST_BUILD_DIR/local.build.properties ]
+then
+	mv -v $EXIST_BUILD_DIR/local.build.properties $EXIST_BUILD_DIR/local.build.properties.BAK
+fi
 
 # build exist-db from source
 echo -e "Building eXist-db from source...\n"
@@ -150,7 +153,10 @@ echo -e "Building eXist-db from source...\n"
 	--snapshot
 
 # unhide the local.build.properties file
-mv -v $EXIST_BUILD_DIR/local.build.properties.BAK $EXIST_BUILD_DIR/local.build.properties
+if [ -e $EXIST_BUILD_DIR/local.build.properties.BAK ]
+then
+	mv -v $EXIST_BUILD_DIR/local.build.properties.BAK $EXIST_BUILD_DIR/local.build.properties
+fi
 
 # migrate the pom versions
 SNAPSHOT_VERSION="$(cat $BUILD_DIR/SNAPSHOT)"

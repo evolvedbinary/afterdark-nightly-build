@@ -106,9 +106,6 @@ if [ ! -d "$BUILD_DIR" ]; then
 	pushd $BUILD_DIR
 	git checkout $EXIST_GIT_BRANCH
 
-	if [ ! -f "${BUILD_DIR}/local.build.properties" ]; then
-		cp -v "${SCRIPT_DIR}/local.build.properties" "${BUILD_DIR}/local.build.properties"
-	fi
 else
 	pushd ${BUILD_DIR}
 
@@ -132,6 +129,11 @@ else
 	if [ -n "${GIT_STASH}" ]; then
 		git stash pop
 	fi
+fi
+
+# copy in an appropriare local.build.properties if one does not exist
+if [ ! -f "${BUILD_DIR}/local.build.properties" ]; then
+	cp -v "${SCRIPT_DIR}/local.build.properties" "${BUILD_DIR}/local.build.properties"
 fi
 
 # check that the local.build.properties has a keystore set
