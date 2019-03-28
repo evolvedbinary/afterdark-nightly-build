@@ -58,7 +58,9 @@ izpack.dir = /path-to/your/izpack-4.3.5
 2. ...or Can be scheduled from cron with something like:
 
 ```
-0 4 * * * /home/some-user/exist-nightly-build/build.sh > /home/some-user/exist-nightly-build.log 2>&1
+0 1 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/exist-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com > /home/aretter/exist-nightly-build.log 2>&1
+
+0 2 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/exist-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com --no-html-table --exist-git-repo git@github.com:PATH-TO-GRANITE/granite.git --exist-git-branch fusiondb-develop --exist-skip-build --exist-build-dir /tmp/granite-nightly-build/dist/source --exist-output-dir /tmp/granite-nightly-build/dist/target --mvn-git-repo git@github.com:PATH-TO-GRANITE/granite-mvn-repo.git --mvn-git-branch master --mvn-build-dir /tmp/granite-nightly-build/mvn/source --mvn-output-dir /tmp/granite-nightly-build/mvn/target --log-dir /tmp/granite-nightly-build --mvn-from-version 201902211724 > /home/aretter/granite-nightly-build.log 2>&1
 ```
 
 **NOTE**: If you are running it via cron, creating the Mac DMG packages requires `sudo` access without promiting for a password as such you will need to make an entry in sudoers similar to:
