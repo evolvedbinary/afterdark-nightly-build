@@ -150,16 +150,16 @@ fi
 if [ ! -n "$SKIP_BUILD" ]; then
   # actually do the build
   ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
-  ./build.sh installer app dist-war dist-bz2
+  ./build.sh installer app dist-bz2
 
   # generate checksums for the built artifacts
-  for file in installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg dist/exist-*.war dist/eXist-*.tar.bz2 ; do
+  for file in installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg dist/eXist-*.tar.bz2 ; do
     sha256sum --binary $file > $file.sha256
   done
 
   # move the built artifacts to the output dir
   mkdir -p $OUTPUT_DIR
-  mv -v installer/eXist-db-setup-*.jar* dist/eXist-db-*.dmg* dist/exist-*.war* dist/eXist-*.tar.bz2* $OUTPUT_DIR
+  mv -v installer/eXist-db-setup-*.jar* dist/eXist-db-*.dmg* dist/eXist-*.tar.bz2* $OUTPUT_DIR
 fi
 
 # restore the cwd
