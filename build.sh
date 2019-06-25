@@ -12,9 +12,6 @@ LOG_DIR="${TMP_ROOT_DIR}"
 EXIST_TMP_DIR="${TMP_ROOT_DIR}/dist"
 EXIST_BUILD_DIR="${EXIST_TMP_DIR}/source"
 EXIST_OUTPUT_DIR="${EXIST_TMP_DIR}/target"
-MVN_TMP_DIR="${TMP_ROOT_DIR}/mvn"
-MVN_BUILD_DIR="${MVN_TMP_DIR}/source"
-MVN_OUTPUT_DIR="${MVN_TMP_DIR}/target"
 
 GENERATE_HTML_TABLE="TRUE"
 
@@ -22,7 +19,7 @@ GENERATE_HTML_TABLE="TRUE"
 set -e
 
 ## uncomment the line below for debugging this script!
-# set -x
+ set -x
 
 # determine the directory that this script is in
 pushd `dirname $0` > /dev/null
@@ -69,24 +66,8 @@ do
     EXIST_OUTPUT_DIR="$2"
     shift
     ;;
-    --mvn-git-repo)
-    MVN_GIT_REPO="$2"
-    shift
-    ;;
-    --mvn-git-branch)
-    MVN_GIT_BRANCH="$2"
-    shift
-    ;;
-    --mvn-build-dir)
-    MVN_BUILD_DIR="$2"
-    shift
-    ;;
-    --mvn-output-dir)
-    MVN_OUTPUT_DIR="$2"
-    shift
-    ;;
-    --mvn-from-version)
-    MVN_FROM_VERSION="$2"
+    -s|--git-stash)
+    GIT_STASH="TRUE"
     shift
     ;;
     --log-dir)
@@ -157,6 +138,8 @@ ${SCRIPT_DIR}/build-exist-dist.sh \
 	${EXIST_GIT_REPO:+ --git-repo "${EXIST_GIT_REPO}"} \
 	${EXIST_GIT_BRANCH:+ --git-branch "${EXIST_GIT_BRANCH}"} \
 	${EXIST_SKIP_BUILD:+ --skip-build} \
+	${GIT_STASH:+ --git-stash} \
+	--timestamp "$TIMESTAMP" \
 	--build-dir "$EXIST_BUILD_DIR" \
 	--output-dir "$EXIST_OUTPUT_DIR" \
 	> $BUILD_DIST_LOG 2>&1
@@ -194,31 +177,6 @@ if [ "${GENERATE_HTML_TABLE}" = "TRUE" ]; then
     fi
     exit 6
   fi
-fi
-
-# build the mvn artifacts
-BUILD_MVN_LOG="${LOG_DIR}/build-exist-mvn.${TIMESTAMP}.log"
-echo -e "Building eXist mvn artifacts, log file: $BUILD_MVN_LOG ...\n"
-set +e
-${SCRIPT_DIR}/build-exist-mvn.sh \
-	${MVN_GIT_REPO:+ --git-repo "${MVN_GIT_REPO}"} \
-	${MVN_GIT_BRANCH:+ --git-branch "${MVN_GIT_BRANCH}"} \
-	${MVN_FROM_VERSION:+ --from-version "${MVN_FROM_VERSION}"} \
-	--build-dir "$MVN_BUILD_DIR" \
-	--output-dir "$MVN_OUTPUT_DIR" \
-	--exist-build-dir "$EXIST_BUILD_DIR" \
-	> $BUILD_MVN_LOG 2>&1
-BUILD_MVN_STATUS=$?
-set -e
-if [ $BUILD_MVN_STATUS -eq 0 ]; then
-  echo -e "OK.\n"
-  rm $BUILD_MVN_LOG
-else
-  echo -e "Error: Failed to build eXist mvn artifacts. status: $BUILD_MVN_STATUS\n"
-  if [ -n "${RCPT_TO}" ]; then
-    email_log "Building eXist mvn artifacts failed" $BUILD_MVN_STATUS $BUILD_MVN_LOG
-  fi
-  exit 7
 fi
 
 

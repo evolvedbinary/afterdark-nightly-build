@@ -13,11 +13,7 @@ You can find the nightly builds output from this script for the eXist-db project
 3. HFS+ filesystem support. Needed for building macOS DMG packages.
     e.g. `sudo apt-get install hfsprogs`
 
-4. IzPack 4.3.5. Needed for building the eXist-db Installer.
-   1. Download - http://download.jboss.org/jbosstools/updates/requirements/izpack/4.3.5/IzPack-install-4.3.5.jar
-   2. Install - `java -jar IzPack-install-4.3.5.jar`
-
-5. Maven 3.5.3 (or newer).
+5. Maven 3.6.1 (or newer).
     1. Download from https://maven.apache.org/download.cgi and untar
     2. Add the `bin/` folder of the untarred folder to the `$PATH` environment variable.
 
@@ -37,16 +33,7 @@ You can find the nightly builds output from this script for the eXist-db project
 $ sudo git clone https://github.com/adamretter/exist-nightly-build.git
 ```
 
-2. Create an `exist-nightly-build/local.build.properties` file for holding eXist-db release settings:
-```
-keystore.file=/path/to/your/exist-nightly-build_key.store
-keystore.alias=exist-nightly-build
-keystore.password=<your password>
-
-izpack.dir = /path-to/your/izpack-4.3.5
-```
-
-3. Further configuration options can be found in the top of each `.sh` and `.py` script.
+2. Configuration options can be found in the top of each `.sh` and `.py` script.
 
 ## Use
 1. You can test as a one-off by running:
@@ -60,7 +47,7 @@ izpack.dir = /path-to/your/izpack-4.3.5
 ```
 0 1 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/exist-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com > /home/aretter/exist-nightly-build.log 2>&1
 
-0 2 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/exist-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com --no-html-table --exist-git-repo git@github.com:PATH-TO-GRANITE/granite.git --exist-git-branch fusiondb-develop --exist-skip-build --exist-build-dir /tmp/granite-nightly-build/dist/source --exist-output-dir /tmp/granite-nightly-build/dist/target --mvn-git-repo git@github.com:PATH-TO-GRANITE/granite-mvn-repo.git --mvn-git-branch master --mvn-build-dir /tmp/granite-nightly-build/mvn/source --mvn-output-dir /tmp/granite-nightly-build/mvn/target --log-dir /tmp/granite-nightly-build --mvn-from-version 201902211724 > /home/aretter/granite-nightly-build.log 2>&1
+0 2 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/exist-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com --no-html-table --exist-git-repo git@github.com:PATH-TO-GRANITE/granite.git --exist-git-branch fusiondb-develop --exist-skip-build --exist-build-dir /tmp/granite-nightly-build/dist/source --exist-output-dir /tmp/granite-nightly-build/dist/target --log-dir /tmp/granite-nightly-build > /home/aretter/granite-nightly-build.log 2>&1
 ```
 
 **NOTE**: If you are running it via cron, creating the Mac DMG packages requires `sudo` access without promiting for a password as such you will need to make an entry in sudoers similar to:

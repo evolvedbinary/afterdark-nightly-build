@@ -18,12 +18,14 @@ EXIST_GIT_BRANCH="develop"
 set -e
 
 ## uncomment the line below for debugging this script!
-#set -x 
+set -x
 
 # determine the directory that this script is in
 pushd `dirname $0` > /dev/null
 SCRIPT_DIR=`pwd -P`
 popd > /dev/null
+
+TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
 # parse command line args
 for i in "$@"
@@ -53,11 +55,36 @@ case $i in
     SKIP_BUILD="TRUE"
     shift
     ;;
+    --timestamp)
+    TIMESTAMP="$2"
+    shift
+    ;;
     *)  # unknown option
     shift
     ;;
 esac
 done
+
+# like `cp` but adds a build label if the filename is a SNAPSHOT
+# and adds a sha256 checksum file
+cpbl() {
+    local in_file=$1
+    local out_dir=$2
+    local out_file_name=$(basename $in_file)
+
+    if [[ $in_file == *"SNAPSHOT-unix"* ]]; then
+        out_file_name=${out_file_name/SNAPSHOT-unix/SNAPSHOT-unix+$TIMESTAMP}
+    elif [[ $in_file == *"SNAPSHOT-win"* ]]; then
+        out_file_name=${out_file_name/SNAPSHOT-win/SNAPSHOT-win+$TIMESTAMP}
+    elif [[ $in_file == *"SNAPSHOT"* ]]; then
+        out_file_name=${out_file_name/SNAPSHOT/SNAPSHOT+$TIMESTAMP}
+    fi
+
+    out_file=$out_dir/$out_file_name
+
+    cp -v $in_file $out_file
+    openssl sha256 -r $out_file > $out_file.sha256
+}
 
 ## sanity checks
 
@@ -89,14 +116,18 @@ if [ ! "$JAVA_VERSION" -eq $REQUIRED_JAVA_VERSION ]; then
   exit 2
 fi
 
-# check there is a local.build.properties in the BUILD_DIR
-# or one that we can copy there
-if [ ! -f "${BUILD_DIR}/local.build.properties" ]; then
-  if [ ! -f "${SCRIPT_DIR}/local.build.properties" ]; then
-    echo -e "Error: Could not find a local.build.properties file\n"
-    echo -e "Needed for setting keystore and izpack locations\n"
-    exit 3;
-  fi
+# check that Maven 3.6.1 or later is available
+if ! [ -x "$(command -v mvn)" ]; then
+   echo -e "Error: Maven mvn binary not found on the PATH\n"
+   exit 3
+fi
+
+REQUIRED_MVN_VERSION=361
+MVN_VERSION="$(mvn --version | head -n 1 | sed 's|Apache Maven \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*|\1\2\3|')"
+if [ ! "$MVN_VERSION" -ge $REQUIRED_MVN_VERSION ]; then
+  echo -e "Error: Building requires Maven 3.6.1 or newer\n"
+  echo -e "Found $(mvn --version | head -n 1)\n"
+  exit 3
 fi
 
 if [ ! -d "$BUILD_DIR" ]; then
@@ -109,13 +140,8 @@ if [ ! -d "$BUILD_DIR" ]; then
 else
 	pushd ${BUILD_DIR}
 
-	# clean any lignering artifacts from a previous build the source code
-	./build.sh clean
-	rm -rf extensions/modules/lib
-
-        # reset any jars which were previously modified due to signing
-        git checkout -- lib/
-	git checkout -- tools/jetty/lib/
+	# clean any lingering artifacts from a previous build of the source code
+	mvn clean
 
 	# update the source from the git repo
 	if [ -n "${GIT_STASH}" ]; then
@@ -131,35 +157,17 @@ else
 	fi
 fi
 
-# copy in an appropriare local.build.properties if one does not exist
-if [ ! -f "${BUILD_DIR}/local.build.properties" ]; then
-	cp -v "${SCRIPT_DIR}/local.build.properties" "${BUILD_DIR}/local.build.properties"
-fi
-
-# check that the local.build.properties has a keystore set
-set +e
-grep -Eq "^keystore.file=.+$" "${BUILD_DIR}/local.build.properties"
-GREP_STATUS=$?
-set -e
-if [ $GREP_STATUS -ne 0 ]; then
-  echo -e "Error: local.build.properties does not set a keystore\n"
-  echo -e "Needed for signing the artifacts\n"
-  exit 3
-fi
-
 if [ ! -n "$SKIP_BUILD" ]; then
-  # actually do the build
-  ./build.sh jnlp-unsign-all all jnlp-sign-exist jnlp-sign-core jnlp-sign-exist-extensions
-  ./build.sh installer app dist-bz2
+  # actually do the build and deploy of Maven artifacts
+  mvn -T 2C -Dlicense.skip=true -Dmdep.analyze.skip=true -Ddependency-check.skip=true -DskipTests -Dmaven.install.skip=true -Dbintray.skip=true package deploy
 
-  # generate checksums for the built artifacts
-  for file in installer/eXist-db-setup-*.jar dist/eXist-db-*.dmg dist/eXist-*.tar.bz2 ; do
-    sha256sum --binary $file > $file.sha256
-  done
-
-  # move the built artifacts to the output dir
+  # copy the built artifacts to the output dir
   mkdir -p $OUTPUT_DIR
-  mv -v installer/eXist-db-setup-*.jar* dist/eXist-db-*.dmg* dist/eXist-*.tar.bz2* $OUTPUT_DIR
+  cpbl exist-installer/target/exist-installer-*.jar* $OUTPUT_DIR
+  cpbl exist-distribution/target/exist-distribution-*.dmg* $OUTPUT_DIR
+  cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $OUTPUT_DIR
+  cpbl exist-distribution/target/exist-distribution-*.zip* $OUTPUT_DIR
+
 fi
 
 # restore the cwd

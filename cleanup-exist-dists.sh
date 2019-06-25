@@ -34,7 +34,7 @@ do
   esac
 done
 
-## cleanup any nightly builds (.dmg, .jar files) that are older than 2 weeks
+## cleanup any nightly builds (.dmg, .jar, .zip, tar.bz2, .sha256 files) that are older than 2 weeks
 if [ -d "${OUTPUT_DIR}" ]; then
-  find $OUTPUT_DIR -mtime +$DAYS -type f \( -iname "*.dmg" -or -iname "*.jar" -or -iname "*.war" -or -iname "*.tar.bz2" \) -exec rm {} \;
+  find $OUTPUT_DIR -mtime +$DAYS -type f \( -iname "*.dmg" -or -iname "*.jar" -or -iname "*.zip" -or -iname "*.tar.bz2" -or -iname "*.sha256" \) -exec rm {} \;
 fi
