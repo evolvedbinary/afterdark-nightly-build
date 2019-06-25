@@ -30,12 +30,12 @@ for (dirpath, dirnames, filenames) in walk(args.output_dir):
 
     for filename in filenames:
 
-        if ("eXist-db" in filename or "exist" in filename) and "SNAPSHOT" in filename and ".sha256" not in filename:
+        if "exist" in filename and "SNAPSHOT" in filename and ".sha256" not in filename:
             existFiles.append(filename)
 
 
 # get hashes
-buildLabelPattern = re.compile("(?:eXist-db|exist)(?:-setup)?-[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT\+([0-9]{12,14})\.(?:jar|dmg|tar\.bz2|war)")
+buildLabelPattern = re.compile("exist-(?:distribution|installer)-[0-9]+\.[0-9]+\.[0-9]+(?:-RC[\-0-9]+)?-SNAPSHOT(?:-(?:win|unix))?\+([0-9]{12,14})\.(?:jar|dmg|tar\.bz2|zip)")
 buildLabels = set()
 for name in existFiles:
     groups = buildLabelPattern.match(name).groups()
@@ -57,8 +57,8 @@ f.write("""<div>
         """)
 
 # iterate over hashes
-fileExtPattern = re.compile(".+\.(jar|dmg|tar\.bz2|war)$")
-labelPattern = re.compile("(?:eXist-db|exist)(?:-setup)?-([0-9]+\.[0-9]+\.[0-9]+(?:-SNAPSHOT\+[0-9]{12})?)\.(?:jar|dmg|tar\.bz2|war)$")
+fileExtPattern = re.compile(".+\.(jar|dmg|tar\.bz2|zip)$")
+labelPattern = re.compile("exist-(?:distribution|installer)-[0-9]+\.[0-9]+\.[0-9]+(?:-RC[\-0-9]+)?-SNAPSHOT(?:-(?:win|unix))?\+([0-9]{12,14})\.(?:jar|dmg|tar\.bz2|zip)$")
 for buildLabel in buildLabels:
 
     # group files per download
