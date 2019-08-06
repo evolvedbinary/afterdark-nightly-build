@@ -6,8 +6,8 @@
 
 ## Defaults. Can be overriden by command line
 ## args --output-dir and/or --days
-TMP_DIR="/tmp/exist-nightly-build/dist"
-OUTPUT_DIR="${TMP_DIR}/target"
+BUILD_DIR="/exist-nightly/dist"
+OUTPUT_DIR="${BUILD_DIR}/target"
 DAYS=15
 
 ## stop on first error!

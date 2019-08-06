@@ -7,11 +7,11 @@
 ## Default paths. Can be overriden by command line
 ## args --log-dir, --exist-build-dir, --exist-output-dir,
 ## --mvn-build-dir and/or --mvn-output-dir
-TMP_ROOT_DIR="/tmp/exist-nightly-build"
-LOG_DIR="${TMP_ROOT_DIR}"
-EXIST_TMP_DIR="${TMP_ROOT_DIR}/dist"
-EXIST_BUILD_DIR="${EXIST_TMP_DIR}/source"
-EXIST_OUTPUT_DIR="${EXIST_TMP_DIR}/target"
+BUILD_ROOT_DIR="/exist-nightly"
+LOG_DIR="${BUILD_ROOT_DIR}"
+EXIST_BUILD_ROOT_DIR="${BUILD_ROOT_DIR}/dist"
+EXIST_SRC_DIR="${EXIST_BUILD_ROOT_DIR}/source"
+EXIST_TARGET_DIR="${EXIST_BUILD_ROOT_DIR}/target"
 
 GENERATE_HTML_TABLE="TRUE"
 
@@ -59,11 +59,11 @@ do
     shift
     ;;
     --exist-build-dir)
-    EXIST_BUILD_DIR="$2"
+    EXIST_SRC_DIR="$2"
     shift
     ;;
     --exist-output-dir)
-    EXIST_OUTPUT_DIR="$2"
+    EXIST_TARGET_DIR="$2"
     shift
     ;;
     -s|--git-stash)
@@ -104,7 +104,7 @@ TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 
 echo -e "Starting build at ${TIMESTAMP}...\n"
 
-mkdir -p $EXIST_OUTPUT_DIR
+mkdir -p $EXIST_TARGET_DIR
 pushd $SCRIPT_DIR
 
 # cleanup old dist artifacts
@@ -113,7 +113,7 @@ if [ -n "${CLEANUP}" ]; then
   echo -e "Cleaning up old eXist dist artifacts, log file: $CLEAN_DIST_LOG ...\n"
   set +e
   ${SCRIPT_DIR}/cleanup-exist-dists.sh \
-	  --output-dir "$EXIST_OUTPUT_DIR" \
+	  --output-dir "$EXIST_TARGET_DIR" \
 	  --days 15 \
 	  > $CLEAN_DIST_LOG 2>&1
   CLEAN_DIST_STATUS=$?
@@ -140,8 +140,8 @@ ${SCRIPT_DIR}/build-exist-dist.sh \
 	${EXIST_SKIP_BUILD:+ --skip-build} \
 	${GIT_STASH:+ --git-stash} \
 	--timestamp "$TIMESTAMP" \
-	--build-dir "$EXIST_BUILD_DIR" \
-	--output-dir "$EXIST_OUTPUT_DIR" \
+	--build-dir "$EXIST_SRC_DIR" \
+	--output-dir "$EXIST_TARGET_DIR" \
 	> $BUILD_DIST_LOG 2>&1
 BUILD_DIST_STATUS=$?
 set -e
@@ -162,8 +162,8 @@ if [ "${GENERATE_HTML_TABLE}" = "TRUE" ]; then
   echo -e "Building eXist dist HTML table, log file: $BUILD_DIST_HTML_LOG ...\n"
   set +e
   ${SCRIPT_DIR}/generate-exist-dist-html-table.py \
-	  --build-dir "$EXIST_BUILD_DIR" \
-	  --output-dir "$EXIST_OUTPUT_DIR" \
+	  --build-dir "$EXIST_SRC_DIR" \
+	  --output-dir "$EXIST_TARGET_DIR" \
 	  > $BUILD_DIST_HTML_LOG 2>&1
   BUILD_DIST_HTML_STATUS=$?
   set -e

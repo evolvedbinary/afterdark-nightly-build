@@ -7,9 +7,9 @@
 
 ## Default paths. Can be overriden by command line
 ## args --build-dir and/or --output-dir
-TMP_DIR="/tmp/exist-nightly-build/dist"
-BUILD_DIR="${TMP_DIR}/source"
-OUTPUT_DIR="${TMP_DIR}/target"
+BUILD_ROOT_DIR="/exist-nightly/dist"
+BUILD_SRC_DIR="${BUILD_ROOT_DIR}/source"
+BUILD_TARGET_DIR="${BUILD_ROOT_DIR}/target"
 
 EXIST_GIT_REPO="git@github.com:eXist-db/exist.git"
 EXIST_GIT_BRANCH="develop"
@@ -32,11 +32,11 @@ for i in "$@"
 do
 case $i in
     -d|--build-dir)
-    BUILD_DIR="$2"
+    BUILD_SRC_DIR="$2"
     shift
     ;;
     -o|--output-dir)
-    OUTPUT_DIR="$2"
+    BUILD_TARGET_DIR="$2"
     shift
     ;;
     -g|--git-repo)
@@ -130,15 +130,15 @@ if [ ! "$MVN_VERSION" -ge $REQUIRED_MVN_VERSION ]; then
   exit 3
 fi
 
-if [ ! -d "$BUILD_DIR" ]; then
+if [ ! -d "$BUILD_SRC_DIR" ]; then
 	# clone the source if we don't already have it
-	mkdir -p $BUILD_DIR
-	git clone $EXIST_GIT_REPO --branch $EXIST_GIT_BRANCH --single-branch $BUILD_DIR
-	pushd $BUILD_DIR
+	mkdir -p $BUILD_SRC_DIR
+	git clone $EXIST_GIT_REPO --branch $EXIST_GIT_BRANCH --single-branch $BUILD_SRC_DIR
+	pushd $BUILD_SRC_DIR
 	git checkout $EXIST_GIT_BRANCH
 
 else
-	pushd ${BUILD_DIR}
+	pushd ${BUILD_SRC_DIR}
 
 	# clean any lingering artifacts from a previous build of the source code
 	mvn clean
@@ -162,17 +162,17 @@ if [ ! -n "$SKIP_BUILD" ]; then
   mvn -T 2C -Dlicense.skip=true -Dmdep.analyze.skip=true -Ddependency-check.skip=true -DskipTests -Dmaven.install.skip=true -Dbintray.skip=true package deploy
 
   # copy the built artifacts to the output dir
-  mkdir -p $OUTPUT_DIR
+  mkdir -p $BUILD_TARGET_DIR
   if [ -d "exist-installer" ]; then
-    cpbl exist-installer/target/exist-installer-*.jar* $OUTPUT_DIR
-    cpbl exist-distribution/target/exist-distribution-*.dmg* $OUTPUT_DIR
-    cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $OUTPUT_DIR
-    cpbl exist-distribution/target/exist-distribution-*.zip* $OUTPUT_DIR
+    cpbl exist-installer/target/exist-installer-*.jar* $BUILD_TARGET_DIR
+    cpbl exist-distribution/target/exist-distribution-*.dmg* $BUILD_TARGET_DIR
+    cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $BUILD_TARGET_DIR
+    cpbl exist-distribution/target/exist-distribution-*.zip* $BUILD_TARGET_DIR
   else
-    cpbl fusiondb-server-distribution/fusiondb-server-nsis/target/fusiondb-server-*-setup.exe $OUTPUT_DIR
-    cpbl fusiondb-server-distribution/fusiondb-server-dmg/target/fusiondb-server-*.dmg $OUTPUT_DIR
-    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-win.zip $OUTPUT_DIR
-    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-unix.tar.bz2 $OUTPUT_DIR
+    cpbl fusiondb-server-distribution/fusiondb-server-nsis/target/fusiondb-server-*-setup.exe $BUILD_TARGET_DIR
+    cpbl fusiondb-server-distribution/fusiondb-server-dmg/target/fusiondb-server-*.dmg $BUILD_TARGET_DIR
+    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-win.zip $BUILD_TARGET_DIR
+    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-unix.tar.bz2 $BUILD_TARGET_DIR
   fi
 fi
 
