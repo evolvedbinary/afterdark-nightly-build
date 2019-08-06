@@ -163,11 +163,17 @@ if [ ! -n "$SKIP_BUILD" ]; then
 
   # copy the built artifacts to the output dir
   mkdir -p $OUTPUT_DIR
-  cpbl exist-installer/target/exist-installer-*.jar* $OUTPUT_DIR
-  cpbl exist-distribution/target/exist-distribution-*.dmg* $OUTPUT_DIR
-  cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $OUTPUT_DIR
-  cpbl exist-distribution/target/exist-distribution-*.zip* $OUTPUT_DIR
-
+  if [ -d "exist-installer" ]; then
+    cpbl exist-installer/target/exist-installer-*.jar* $OUTPUT_DIR
+    cpbl exist-distribution/target/exist-distribution-*.dmg* $OUTPUT_DIR
+    cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $OUTPUT_DIR
+    cpbl exist-distribution/target/exist-distribution-*.zip* $OUTPUT_DIR
+  else
+    cpbl fusiondb-server-distribution/fusiondb-server-nsis/target/fusiondb-server-*-setup.exe $OUTPUT_DIR
+    cpbl fusiondb-server-distribution/fusiondb-server-dmg/target/fusiondb-server-*.dmg $OUTPUT_DIR
+    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-win.zip $OUTPUT_DIR
+    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-unix.tar.bz2 $OUTPUT_DIR
+  fi
 fi
 
 # restore the cwd
