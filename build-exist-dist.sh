@@ -165,7 +165,7 @@ if [ ! -n "$SKIP_BUILD" ]; then
   mkdir -p $BUILD_TARGET_DIR
   if [ -d "exist-installer" ]; then
     cpbl exist-installer/target/exist-installer-*.jar* $BUILD_TARGET_DIR
-    cpbl exist-distribution/target/exist-distribution-*.dmg* $BUILD_TARGET_DIR
+    cpbl exist-distribution/target/eXist-db-*.dmg* $BUILD_TARGET_DIR
     cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $BUILD_TARGET_DIR
     cpbl exist-distribution/target/exist-distribution-*.zip* $BUILD_TARGET_DIR
   else
