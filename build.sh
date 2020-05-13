@@ -13,6 +13,8 @@ EXIST_BUILD_ROOT_DIR="${BUILD_ROOT_DIR}/dist"
 EXIST_SRC_DIR="${EXIST_BUILD_ROOT_DIR}/source"
 EXIST_TARGET_DIR="${EXIST_BUILD_ROOT_DIR}/target"
 
+MAX_DAYS=8  # number of days to keep nightlies for
+
 GENERATE_HTML_TABLE="TRUE"
 
 ## stop on first error!
@@ -118,7 +120,7 @@ if [ -n "${CLEANUP}" ]; then
   set +e
   ${SCRIPT_DIR}/cleanup-exist-dists.sh \
 	  --output-dir "$EXIST_TARGET_DIR" \
-	  --days 15 \
+	  --days $MAX_DAYS \
 	  > $CLEAN_DIST_LOG 2>&1
   CLEAN_DIST_STATUS=$?
   set -e
