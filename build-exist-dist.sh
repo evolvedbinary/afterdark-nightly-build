@@ -167,7 +167,8 @@ fi
 
 if [ ! -n "$SKIP_BUILD" ]; then
   # actually do the build and deploy of Maven artifacts
-  mvn -T 2C -Dlicense.skip=true -Dmdep.analyze.skip=true -Ddependency-check.skip=true -DskipTests -Dmaven.install.skip=true -Dbintray.skip=true package deploy
+  # mvn -T 2C -Dlicense.skip=true -Dmdep.analyze.skip=true -Ddependency-check.skip=true -DskipTests -Dmaven.install.skip=true -Dbintray.skip=true package net.nicoulaj.maven.plugins:checksum-maven-plugin:1.8:artifacts deploy
+  mvn -V -T 2C package deploy -Dlicense.skip=true -Dmdep.analyze.skip=true -DskipTests -Ddependency-check.skip=true -Ddocker=false -Dmaven.install.skip=true -Dbintray.skip=true -P !concurrency-stress-tests,!micro-benchmarks
 
   # copy the built artifacts to the output dir
   mkdir -p $BUILD_TARGET_DIR
