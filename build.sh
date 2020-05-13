@@ -66,6 +66,10 @@ do
     EXIST_TARGET_DIR="$2"
     shift
     ;;
+    -r|--git-reset)
+    GIT_RESET="TRUE"
+    shift
+    ;;
     -s|--git-stash)
     GIT_STASH="TRUE"
     shift
@@ -138,6 +142,7 @@ ${SCRIPT_DIR}/build-exist-dist.sh \
 	${EXIST_GIT_REPO:+ --git-repo "${EXIST_GIT_REPO}"} \
 	${EXIST_GIT_BRANCH:+ --git-branch "${EXIST_GIT_BRANCH}"} \
 	${EXIST_SKIP_BUILD:+ --skip-build} \
+	${GIT_RESET:+ --git-reset} \
 	${GIT_STASH:+ --git-stash} \
 	--timestamp "$TIMESTAMP" \
 	--build-dir "$EXIST_SRC_DIR" \

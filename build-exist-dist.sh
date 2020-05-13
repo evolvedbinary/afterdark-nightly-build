@@ -47,6 +47,10 @@ case $i in
     EXIST_GIT_BRANCH="$2"
     shift
     ;;
+    -r|--git-reset)
+    GIT_RESET="TRUE"
+    shift
+    ;;
     -s|--git-stash)
     GIT_STASH="TRUE"
     shift
@@ -150,7 +154,11 @@ else
 
 	git fetch origin
 	git checkout $EXIST_GIT_BRANCH
-	git rebase "origin/${EXIST_GIT_BRANCH}"
+	if [ -n "${GIT_RESET}" ]; then
+		git reset --hard "origin/${EXIST_GIT_BRANCH}"
+	else
+		git rebase "origin/${EXIST_GIT_BRANCH}"
+	fi
 
 	if [ -n "${GIT_STASH}" ]; then
 		git stash pop
