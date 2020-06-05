@@ -59,6 +59,10 @@ case $i in
     SKIP_BUILD="TRUE"
     shift
     ;;
+    --skip-git-rev-check)
+    SKIP_GIT_REV_CHECK="TRUE"
+    shift
+    ;;
     --timestamp)
     TIMESTAMP="$2"
     shift
@@ -166,23 +170,42 @@ else
 fi
 
 if [ ! -n "$SKIP_BUILD" ]; then
-  # actually do the build and deploy of Maven artifacts
-  # mvn -T 2C -Dlicense.skip=true -Dmdep.analyze.skip=true -Ddependency-check.skip=true -DskipTests -Dmaven.install.skip=true -Dbintray.skip=true package net.nicoulaj.maven.plugins:checksum-maven-plugin:1.8:artifacts deploy
-  mvn -V -T 2C package deploy -Dlicense.skip=true -Dmdep.analyze.skip=true -DskipTests -Ddependency-check.skip=true -Ddocker=false -Dmaven.install.skip=true -Dbintray.skip=true -P !concurrency-stress-tests,!micro-benchmarks
 
-  # copy the built artifacts to the output dir
-  mkdir -p $BUILD_TARGET_DIR
-  if [ -d "exist-installer" ]; then
-    cpbl exist-installer/target/exist-installer-*.jar* $BUILD_TARGET_DIR
-    cpbl exist-distribution/target/eXist-db-*.dmg* $BUILD_TARGET_DIR
-    cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $BUILD_TARGET_DIR
-    cpbl exist-distribution/target/exist-distribution-*.zip* $BUILD_TARGET_DIR
-  else
-    cpbl fusiondb-server-distribution/fusiondb-server-nsis/target/fusiondb-server-*-setup.exe $BUILD_TARGET_DIR
-    cpbl fusiondb-server-distribution/fusiondb-server-dmg/target/fusiondb-server-*.dmg $BUILD_TARGET_DIR
-    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-win.zip $BUILD_TARGET_DIR
-    cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-unix.tar.bz2 $BUILD_TARGET_DIR
+  CURRENT_REV=$(git rev-parse --short=7 HEAD)
+  PREV_REV="NONE"
+  if [ ! -n "$SKIP_GIT_REV_CHECK" ] && [[ -f ".nightly-build-prev-rev" ]]; then
+    PREV_REV=$(<.nightly-build-prev-rev)
   fi
+
+  if [[ $PREV_REV != $CURRENT_REV ]]; then
+
+    # actually do the build and deploy of Maven artifacts
+    # mvn -T 2C -Dlicense.skip=true -Dmdep.analyze.skip=true -Ddependency-check.skip=true -DskipTests -Dmaven.install.skip=true -Dbintray.skip=true package net.nicoulaj.maven.plugins:checksum-maven-plugin:1.8:artifacts deploy
+    mvn -V -T 2C package deploy -Dlicense.skip=true -Dmdep.analyze.skip=true -DskipTests -Ddependency-check.skip=true -Ddocker=false -Dmaven.install.skip=true -Dbintray.skip=true -P !concurrency-stress-tests,!micro-benchmarks
+
+    # copy the built artifacts to the output dir
+    mkdir -p $BUILD_TARGET_DIR
+    if [ -d "exist-installer" ]; then
+      cpbl exist-installer/target/exist-installer-*.jar* $BUILD_TARGET_DIR
+      cpbl exist-distribution/target/eXist-db-*.dmg* $BUILD_TARGET_DIR
+      cpbl exist-distribution/target/exist-distribution-*.tar.bz2* $BUILD_TARGET_DIR
+      cpbl exist-distribution/target/exist-distribution-*.zip* $BUILD_TARGET_DIR
+    else
+      cpbl fusiondb-server-distribution/fusiondb-server-nsis/target/fusiondb-server-*-setup.exe $BUILD_TARGET_DIR
+      cpbl fusiondb-server-distribution/fusiondb-server-dmg/target/fusiondb-server-*.dmg $BUILD_TARGET_DIR
+      cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-win.zip $BUILD_TARGET_DIR
+      cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-unix.tar.bz2 $BUILD_TARGET_DIR
+    fi
+
+    # store the revision of the build (for next time...)
+    echo "${CURRENT_REV}" > .nightly-build-prev-rev
+
+  else
+    echo -e "\n\nSkipping build (PREV_REV=${PREV_REV} and CURRENT_REV=${CURRENT_REV}, no changes!)...\n"
+  fi
+
+else
+  echo -e "\n\nSkipping build (--skip-build was specified)...\n"
 fi
 
 # restore the cwd
