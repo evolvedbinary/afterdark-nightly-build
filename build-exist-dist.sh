@@ -199,6 +199,14 @@ if [ ! -n "$SKIP_BUILD" ]; then
       cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-unix.tar.bz2 $BUILD_TARGET_DIR
     fi
 
+    # store a composite sha256 file
+    COMPOSITE_SHA256_FILE_NAME=$(ls $BUILD_TARGET_DIR/*$TIMESTAMP.dmg)
+    COMPOSITE_SHA256_FILE_NAME=$(basename $COMPOSITE_SHA256_FILE_NAME)
+    COMPOSITE_SHA256_FILE_NAME="${COMPOSITE_SHA256_FILE_NAME/.dmg/.sha256}"
+    pushd $BUILD_TARGET_DIR
+    $(cat *$TIMESTAMP*.sha256 > $COMPOSITE_SHA256_FILE_NAME)
+    popd
+
     # store the revision of the build (for next time...)
     echo "${CURRENT_REV}" > .nightly-build-prev-rev
 
