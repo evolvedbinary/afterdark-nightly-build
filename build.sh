@@ -76,6 +76,10 @@ do
     GIT_STASH="TRUE"
     shift
     ;;
+    --skip-git-rev-check)
+    SKIP_GIT_REV_CHECK="TRUE"
+    shift
+    ;;
     --log-dir)
     LOG_DIR="$2"
     shift
@@ -113,28 +117,8 @@ echo -e "Starting build at ${TIMESTAMP}...\n"
 mkdir -p $EXIST_TARGET_DIR
 pushd $SCRIPT_DIR
 
-# cleanup old dist artifacts
-if [ -n "${CLEANUP}" ]; then
-  CLEAN_DIST_LOG="${LOG_DIR}/cleanup-exist-dists.${TIMESTAMP}.log"
-  echo -e "Cleaning up old eXist dist artifacts, log file: $CLEAN_DIST_LOG ...\n"
-  set +e
-  ${SCRIPT_DIR}/cleanup-exist-dists.sh \
-	  --output-dir "$EXIST_TARGET_DIR" \
-	  --days $MAX_DAYS \
-	  > $CLEAN_DIST_LOG 2>&1
-  CLEAN_DIST_STATUS=$?
-  set -e
-  if [ $CLEAN_DIST_STATUS -eq 0 ]; then
-    echo -e "OK.\n"
-    rm $CLEAN_DIST_LOG
-  else
-    echo -e "Error: Failed to cleanup eXist dist artifacts. status: $CLEAN_DIST_STATUS\n"
-    if [ -n "${RCPT_TO}" ]; then
-      email_log "Cleanup of eXist dist artifacts failed" $CLEAN_DIST_STATUS $CLEAN_DIST_LOG
-    fi
-    exit 4
-  fi
-fi
+# count current dist artifacts
+DIST_ARTIFACTS_COUNT=$(ls -1q $EXIST_TARGET_DIR/* | wc -l)
 
 # build the dist artifacts
 BUILD_DIST_LOG="${LOG_DIR}/build-exist-dist.${TIMESTAMP}.log"
@@ -146,6 +130,7 @@ ${SCRIPT_DIR}/build-exist-dist.sh \
 	${EXIST_SKIP_BUILD:+ --skip-build} \
 	${GIT_RESET:+ --git-reset} \
 	${GIT_STASH:+ --git-stash} \
+	${SKIP_GIT_REV_CHECK:+ --skip-git-rev-check} \
 	--timestamp "$TIMESTAMP" \
 	--build-dir "$EXIST_SRC_DIR" \
 	--output-dir "$EXIST_TARGET_DIR" \
@@ -163,29 +148,61 @@ else
   exit 5
 fi
 
-if [ "${GENERATE_HTML_TABLE}" = "TRUE" ]; then
-  # generate python html table for eXist dist artifacts
-  BUILD_DIST_HTML_LOG="${LOG_DIR}/build-exist-dist-html.${TIMESTAMP}.log"
-  echo -e "Building eXist dist HTML table, log file: $BUILD_DIST_HTML_LOG ...\n"
-  set +e
-  ${SCRIPT_DIR}/generate-exist-dist-html-table.py \
-	  --build-dir "$EXIST_SRC_DIR" \
-	  --output-dir "$EXIST_TARGET_DIR" \
-	  > $BUILD_DIST_HTML_LOG 2>&1
-  BUILD_DIST_HTML_STATUS=$?
-  set -e
-  if [ $BUILD_DIST_HTML_STATUS -eq 0 ]; then
-    echo -e "OK.\n"
-    rm $BUILD_DIST_HTML_LOG
-  else
-    echo -e "Error: Failed to build eXist dist HTML table. status: $BUILD_DIST_HTML_STATUS\n"
-    if [ -n "${RCPT_TO}" ]; then
-      email_log "Building eXist dist HTML table failed" $BUILD_DIST_HTML_STATUS $BUILD_DIST_HTML_LOG
-    fi
-    exit 6
-  fi
-fi
+# count again all the dist artifacts
+UPDATED_DIST_ARTIFACTS_COUNT=$(ls -1q $EXIST_TARGET_DIR/* | wc -l)
 
+# Only cleanup old artifacts and update the table if there are new dist artifacts
+if [[ $DIST_ARTIFACTS_COUNT != $UPDATED_DIST_ARTIFACTS_COUNT ]]; then
+
+  # cleanup old dist artifacts
+  if [ -n "${CLEANUP}" ]; then
+    CLEAN_DIST_LOG="${LOG_DIR}/cleanup-exist-dists.${TIMESTAMP}.log"
+    echo -e "Cleaning up old eXist dist artifacts, log file: $CLEAN_DIST_LOG ...\n"
+    set +e
+    ${SCRIPT_DIR}/cleanup-exist-dists.sh \
+            --output-dir "$EXIST_TARGET_DIR" \
+            --days $MAX_DAYS \
+            > $CLEAN_DIST_LOG 2>&1
+    CLEAN_DIST_STATUS=$?
+    set -e
+    if [ $CLEAN_DIST_STATUS -eq 0 ]; then
+      echo -e "OK.\n"
+      rm $CLEAN_DIST_LOG
+    else
+      echo -e "Error: Failed to cleanup eXist dist artifacts. status: $CLEAN_DIST_STATUS\n"
+      if [ -n "${RCPT_TO}" ]; then
+        email_log "Cleanup of eXist dist artifacts failed" $CLEAN_DIST_STATUS $CLEAN_DIST_LOG
+      fi
+      exit 4
+    fi
+  fi
+
+  if [ "${GENERATE_HTML_TABLE}" = "TRUE" ]; then
+    # generate python html table for eXist dist artifacts
+    BUILD_DIST_HTML_LOG="${LOG_DIR}/build-exist-dist-html.${TIMESTAMP}.log"
+    echo -e "Building eXist dist HTML table, log file: $BUILD_DIST_HTML_LOG ...\n"
+    set +e
+    ${SCRIPT_DIR}/generate-exist-dist-html-table.py \
+    	--build-dir "$EXIST_SRC_DIR" \
+    	--output-dir "$EXIST_TARGET_DIR" \
+    	> $BUILD_DIST_HTML_LOG 2>&1
+    BUILD_DIST_HTML_STATUS=$?
+    set -e
+    if [ $BUILD_DIST_HTML_STATUS -eq 0 ]; then
+      echo -e "OK.\n"
+      rm $BUILD_DIST_HTML_LOG
+    else
+      echo -e "Error: Failed to build eXist dist HTML table. status: $BUILD_DIST_HTML_STATUS\n"
+      if [ -n "${RCPT_TO}" ]; then
+        email_log "Building eXist dist HTML table failed" $BUILD_DIST_HTML_STATUS $BUILD_DIST_HTML_LOG
+      fi
+      exit 6
+    fi
+  fi
+
+else
+  echo -e "No new dist artifacts!\n"
+fi
 
 echo -e "Build complete.\n"
 
