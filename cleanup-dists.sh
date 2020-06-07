@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 ##
-# Cleans up eXist-db dist artifacts that are older than N days
+# Cleans up FusionDB or eXist-db dist artifacts that are older than N days
 ##
 
 ## Defaults. Can be overriden by command line
 ## args --output-dir and/or --days
-BUILD_DIR="/exist-nightly/dist"
+BUILD_DIR="/nightly/dist"
 OUTPUT_DIR="${BUILD_DIR}/target"
 DAYS=15
 

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
 ###
-## Performs a SNAPSHOT build of eXist-db dist artifacts
+## Performs a SNAPSHOT build of FusionDB or eXist-db dist artifacts
 ## and creates SHA256 checksums for them
 ###
 
 ## Default paths. Can be overriden by command line
 ## args --build-dir and/or --output-dir
-BUILD_ROOT_DIR="/exist-nightly/dist"
+BUILD_ROOT_DIR="/nightly/dist"
 BUILD_SRC_DIR="${BUILD_ROOT_DIR}/source"
 BUILD_TARGET_DIR="${BUILD_ROOT_DIR}/target"
 
-EXIST_GIT_REPO="git@github.com:eXist-db/exist.git"
-EXIST_GIT_BRANCH="develop"
+GIT_REPO="git@github.com:eXist-db/exist.git"
+GIT_BRANCH="develop"
 
 ## stop on first error!
 set -e
@@ -40,11 +40,11 @@ case $i in
     shift
     ;;
     -g|--git-repo)
-    EXIST_GIT_REPO="$2"
+    GIT_REPO="$2"
     shift
     ;;
     -b|--git-branch)
-    EXIST_GIT_BRANCH="$2"
+    GIT_BRANCH="$2"
     shift
     ;;
     -r|--git-reset)
@@ -143,9 +143,9 @@ fi
 if [ ! -d "$BUILD_SRC_DIR" ]; then
 	# clone the source if we don't already have it
 	mkdir -p $BUILD_SRC_DIR
-	git clone $EXIST_GIT_REPO --branch $EXIST_GIT_BRANCH --single-branch $BUILD_SRC_DIR
+	git clone $GIT_REPO --branch $GIT_BRANCH --single-branch $BUILD_SRC_DIR
 	pushd $BUILD_SRC_DIR
-	git checkout $EXIST_GIT_BRANCH
+	git checkout $GIT_BRANCH
 
 else
 	pushd ${BUILD_SRC_DIR}
@@ -159,11 +159,11 @@ else
 	fi
 
 	git fetch origin
-	git checkout $EXIST_GIT_BRANCH
+	git checkout $GIT_BRANCH
 	if [ -n "${GIT_RESET}" ]; then
-		git reset --hard "origin/${EXIST_GIT_BRANCH}"
+		git reset --hard "origin/${GIT_BRANCH}"
 	else
-		git rebase "origin/${EXIST_GIT_BRANCH}"
+		git rebase "origin/${GIT_BRANCH}"
 	fi
 
 	if [ -n "${GIT_STASH}" ]; then

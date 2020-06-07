@@ -1,7 +1,7 @@
-# eXist-db Nightly Builds
-Scripts for performing a nightly build of eXist-db dist and Maven artifacts.
+# Nightly Builds
+Scripts for performing a nightly build of FusionDB or eXist-db dist and Maven artifacts.
 
-You can find the nightly builds output from this script for the eXist-db project at: http://static.adamretter.org.uk/exist-nightly/
+You can find the nightly builds output from this script at: https://www.evolvedbinary.com/afterdark.html
 
 ## Requirements
 1. JDK 8.
@@ -30,7 +30,7 @@ You can find the nightly builds output from this script for the eXist-db project
 1. Clone this repository:
 
 ```bash
-$ sudo git clone https://github.com/adamretter/exist-nightly-build.git
+$ sudo git clone https://github.com/evolvedbinary/afterdark-nightly-build.git
 ```
 
 2. Configuration options can be found in the top of each `.sh` and `.py` script.
@@ -45,9 +45,9 @@ $ sudo git clone https://github.com/adamretter/exist-nightly-build.git
 2. ...or Can be scheduled from cron with something like:
 
 ```
-0 1 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/exist-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com > /home/aretter/exist-nightly-build.log 2>&1
+0 1 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/afterdark-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com --no-html-table --git-repo git@github.com:evolvedbinary/fusiondb-server.git --git-branch fusiondb-develop --git-reset --build-dir /fusiondb-nightly/dist/source --output-dir /fusiondb-nightly/dist/target --log-dir /fusiondb-nightly > /home/aretter/fusiondb-nightly-build.log 2>&1
 
-0 2 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/exist-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com --no-html-table --exist-git-repo git@github.com:PATH-TO-GRANITE/granite.git --exist-git-branch fusiondb-develop --exist-skip-build --exist-build-dir /tmp/granite-nightly-build/dist/source --exist-output-dir /tmp/granite-nightly-build/dist/target --log-dir /tmp/granite-nightly-build > /home/aretter/granite-nightly-build.log 2>&1
+0 2 * * * HOME=/home/aretter . /home/aretter/.profile; HOME=/home/aretter /home/aretter/afterdark-nightly-build/build.sh --cleanup --mail-from sysops@evolvedbinary.com --rcpt-to sysops@evolvedbinary.com --git-repo git@github.com:eXist-db/exist.git --git-branch develop --build-dir /existdb-nightly/dist/source --output-dir /existdb-nightly/dist/target --log-dir /existdb-nightly > /home/aretter/exist-nightly-build.log 2>&1
 ```
 
 **NOTE**: If you are running it via cron, creating the Mac DMG packages requires `sudo` access without promiting for a password as such you will need to make an entry in sudoers similar to:

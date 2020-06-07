@@ -6,10 +6,10 @@ from datetime import datetime
 import argparse
 
 ###
-## Generates a HTML table of eXist-db dist artifacts
+## Generates a HTML table of dist artifacts
 ###
 
-tmp_dir="/tmp/exist-nightly-build/dist"
+tmp_dir="/nightly/dist"
 default_build_dir = tmp_dir + "/source"
 default_output_dir = tmp_dir + "/target"
 
@@ -17,8 +17,8 @@ default_output_dir = tmp_dir + "/target"
 parser = argparse.ArgumentParser(description="Generate an index.html table of nightly builds")
 parser.add_argument("-b", "--git-branch", default="develop", dest="git_branch", help="The git branch to use")
 parser.add_argument("-u", "--github-repo-url", default="https://github.com/eXist-db/exist", dest="github_repo_url", help="Public URL of the GitHub repo")
-parser.add_argument("-d", "--build-dir", default=default_build_dir, dest="build_dir", help="The directory containing the eXist-db build")
-parser.add_argument("-o", "--output-dir", default=default_output_dir, dest="output_dir", help="The directory containing the built eXist-db artifacts")
+parser.add_argument("-d", "--build-dir", default=default_build_dir, dest="build_dir", help="The directory containing the build")
+parser.add_argument("-o", "--output-dir", default=default_output_dir, dest="output_dir", help="The directory containing the built artifacts")
 parser.add_argument("-f", "--file-name", default="table.html", dest="filename", help="The name for the generated HTML file")
 args = parser.parse_args()
 
