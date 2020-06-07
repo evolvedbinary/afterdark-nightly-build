@@ -197,6 +197,8 @@ if [ ! -n "$SKIP_BUILD" ]; then
       cpbl fusiondb-server-distribution/fusiondb-server-dmg/target/fusiondb-server-*.dmg $BUILD_TARGET_DIR
       cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-win.zip $BUILD_TARGET_DIR
       cpbl fusiondb-server-distribution/fusiondb-server-archive/target/fusiondb-server-*-unix.tar.bz2 $BUILD_TARGET_DIR
+      cpbl fusiondb-server-distribution/fusiondb-server-deb/target/fusiondb-server_*.deb $BUILD_TARGET_DIR
+      cpbl fusiondb-server-distribution/fusiondb-server-rpm/target/fusiondb-server-*.rpm $BUILD_TARGET_DIR
     fi
 
     # store a composite sha256 file
