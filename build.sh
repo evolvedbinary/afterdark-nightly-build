@@ -104,6 +104,10 @@ do
     SMB_OUTPUT_DIR="$2"
     shift
     ;;
+    --unlock-mac-creds-file)
+    UNLOCK_MAC_CREDS_FILE="$2"
+    shift
+    ;;
     *)  #unknown option
     shift
     ;;
@@ -160,6 +164,16 @@ START_TIME="$(date -u +%s)"
 TIMESTAMP="$(date -j -u -f %s $START_TIME +%Y%m%d%H%M%S)"
 
 echo -e "Starting build at ${TIMESTAMP}...\n"
+
+# if this is a mac, do we need to unlock the security?
+UNAME="$(uname -s)"
+if [ "${UNAME}" == "Darwin" ]; then
+  if [ -n "${UNLOCK_MAC_CREDS_FILE}" ]; then
+    UNLOCK_MAC_CREDS=$(<$UNLOCK_MAC_CREDS_FILE)
+
+    security unlock -p $UNLOCK_MAC_CREDS
+  fi  
+fi
 
 mkdir -p $TARGET_DIR
 
