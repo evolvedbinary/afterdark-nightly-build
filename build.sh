@@ -110,7 +110,8 @@ EOM
 
 }
 
-TIMESTAMP="$(date +%Y%m%d%H%M%S)"
+START_TIME="$(date -u +%s)"
+TIMESTAMP="$(date -j -u -f %s $START_TIME +%Y%m%d%H%M%S)"
 
 echo -e "Starting build at ${TIMESTAMP}...\n"
 
@@ -204,7 +205,14 @@ else
   echo -e "No new dist artifacts!\n"
 fi
 
-echo -e "Build complete.\n"
+
+END_TIME="$(date -u +%s)"
+END_TIMESTAMP="$(date -j -u -f %s $END_TIME +%Y%m%d%H%M%S)"
+
+DURATION_TIME="$(($END_TIME-$START_TIME))"
+DURATION="$(date -j -u -f %s $DURATION_TIME +%H%M%S)"
+
+echo -e "Build completed at ${END_TIMESTAMP} (elapsed: $DURATION).\n"
 
 # restore the cwd
 popd
