@@ -32,6 +32,10 @@ popd > /dev/null
 for i in "$@"
 do
   case $i in
+    --use-mailsend-go)
+    USE_MAILSEND_GO="TRUE"
+    shift
+    ;;
     -f|--mail-from)
     MAIL_FROM="$2"
     shift
@@ -91,10 +95,21 @@ do
 done
 
 function email_log {
-  SUBJECT=$1
-  EXIT_STATUS=$2
-  LOG_FILE=$3
-  LOG_FILE_NAME="$(basename $LOG_FILE)"
+  local SUBJECT=$1
+  local EXIT_STATUS=$2
+  local LOG_FILE=$3
+  if [ -n "${USE_MAILSEND_GO}" ]; then
+    email_log_mailsend_go "${SUBJECT}" "${EXIT_STATUS}" "${LOG_FILE}"
+  else
+    email_log_sendmail "${SUBJECT}" "${EXIT_STATUS}" "${LOG_FILE}"
+  fi
+}
+
+function email_log_sendmail {
+  local SUBJECT=$1
+  local EXIT_STATUS=$2
+  local LOG_FILE=$3
+  local LOG_FILE_NAME="$(basename $LOG_FILE)"
 
   /usr/sbin/sendmail -f $MAIL_FROM $RCPT_TO <<EOM
 from: $MAIL_FROM
@@ -108,6 +123,22 @@ $(cat $LOG_FILE | uuencode $LOG_FILE_NAME)
 
 EOM
 
+}
+
+function email_log_mailsend_go {
+  local SUBJECT=$1
+  local EXIT_STATUS=$2
+  local LOG_FILE=$3
+
+  mailsend-go \
+      -smtp jess.evolvedbinary.com -port 25 \
+      -from "${MAIL_FROM}" \
+      -to "${RCPT_TO}" \
+      -sub "${SUBJECT}" \
+      body \
+          -msg "Script failed with exit code: $EXIT_STATUS.\nLog file is attached!" \
+      attach \
+          -file $LOG_FILE
 }
 
 START_TIME="$(date -u +%s)"
