@@ -151,6 +151,7 @@ pushd $SCRIPT_DIR
 
 # count current dist artifacts
 DIST_ARTIFACTS_COUNT=$(ls -1q $TARGET_DIR/* | wc -l)
+DIST_ARTIFACTS_COUNT="${DIST_ARTIFACTS_COUNT#"${DIST_ARTIFACTS_COUNT%%[![:space:]]*}"}"
 
 # build the dist artifacts
 BUILD_DIST_LOG="${LOG_DIR}/build-dist.${TIMESTAMP}.log"
