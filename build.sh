@@ -88,6 +88,22 @@ do
     LOG_DIR="$2"
     shift
     ;;
+    --smb-output-server)
+    SMB_OUTPUT_SERVER="$2"
+    shift
+    ;;
+    --smb-output-server-creds-file)
+    SMB_OUTPUT_SERVER_CREDS_FILE="$2"
+    shift
+    ;;
+    --smb-output-basedir)
+    SMB_OUTPUT_BASEDIR="$2"
+    shift
+    ;;
+    --smb-output-dir)
+    SMB_OUTPUT_DIR="$2"
+    shift
+    ;;
     *)  #unknown option
     shift
     ;;
@@ -137,8 +153,7 @@ function email_log_mailsend_go {
       -sub "${SUBJECT}" \
       body \
           -msg "Script failed with exit code: $EXIT_STATUS.\nLog file is attached!" \
-      attach \
-          -file $LOG_FILE
+      ${LOG_FILE:+ attach -file $LOG_FILE} 
 }
 
 START_TIME="$(date -u +%s)"
@@ -147,6 +162,38 @@ TIMESTAMP="$(date -j -u -f %s $START_TIME +%Y%m%d%H%M%S)"
 echo -e "Starting build at ${TIMESTAMP}...\n"
 
 mkdir -p $TARGET_DIR
+
+# Mount the SMB output filesystem if needed
+if [ -n "${SMB_OUTPUT_SERVER}" ]; then
+  SMB_OUTPUT_SERVER_CREDS=$(<$SMB_OUTPUT_SERVER_CREDS_FILE)
+
+  # attempt to mount full SMB path
+  set +e
+      mount_smbfs "//${SMB_OUTPUT_SERVER_CREDS}@${SMB_OUTPUT_SERVER}${SMB_OUTPUT_BASEDIR}${SMB_OUTPUT_DIR}" $TARGET_DIR
+      SMB_STATUS=$?
+  set -e
+
+  if [ $SMB_STATUS -eq 64 ]; then
+    # SMB_OUTPUT_DIR likely does not exist try and create it
+    mount_smbfs "//${SMB_OUTPUT_SERVER_CREDS}@${SMB_OUTPUT_SERVER}${SMB_OUTPUT_BASEDIR}" $TARGET_DIR
+    mkdir -p "${TARGET_DIR}${SMB_OUTPUT_DIR}"
+    umount $TARGET_DIR
+
+    # Attempt remount of full SMB path
+    mount_smbfs "//${SMB_OUTPUT_SERVER_CREDS}@${SMB_OUTPUT_SERVER}${SMB_OUTPUT_BASEDIR}${SMB_OUTPUT_DIR}" $TARGET_DIR
+
+  elif [ $SMB_STATUS -ne 0 ]; then
+    # could not mount full SMB path for unknown reason
+    echo -e "Error: Failed to mount SMB server. status: $SMB_STATUS\n"
+    if [ -n "${RCPT_TO}" ]; then
+      email_log "Mounting SMB server failed" $SMB_STATUS
+    fi
+    exit 7
+  fi 
+
+fi
+
+
 pushd $SCRIPT_DIR
 
 # count current dist artifacts
@@ -178,6 +225,9 @@ else
   if [ -n "${RCPT_TO}" ]; then
     email_log "Building dist artifacts failed" $BUILD_DIST_STATUS $BUILD_DIST_LOG
   fi
+  if [ -n "${SMB_OUTPUT_SERVER}" ]; then
+    umount $TARGET_DIR
+  fi
   exit 5
 fi
 
@@ -206,6 +256,9 @@ if [[ $DIST_ARTIFACTS_COUNT != $UPDATED_DIST_ARTIFACTS_COUNT ]]; then
       if [ -n "${RCPT_TO}" ]; then
         email_log "Cleanup of dist artifacts failed" $CLEAN_DIST_STATUS $CLEAN_DIST_LOG
       fi
+      if [ -n "${SMB_OUTPUT_SERVER}" ]; then
+        umount $TARGET_DIR
+      fi
       exit 4
     fi
   fi
@@ -228,6 +281,9 @@ if [[ $DIST_ARTIFACTS_COUNT != $UPDATED_DIST_ARTIFACTS_COUNT ]]; then
       echo -e "Error: Failed to build dist HTML table. status: $BUILD_DIST_HTML_STATUS\n"
       if [ -n "${RCPT_TO}" ]; then
         email_log "Building dist HTML table failed" $BUILD_DIST_HTML_STATUS $BUILD_DIST_HTML_LOG
+      fi
+      if [ -n "${SMB_OUTPUT_SERVER}" ]; then
+        umount $TARGET_DIR
       fi
       exit 6
     fi
