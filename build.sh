@@ -174,7 +174,7 @@ if [ $BUILD_DIST_STATUS -eq 0 ]; then
   echo -e "OK.\n"
   rm $BUILD_DIST_LOG
 else
-  echo -e "Error: Failed to build  dist artifacts. status: $BUILD_DIST_STATUS\n"
+  echo -e "Error: Failed to build dist artifacts. status: $BUILD_DIST_STATUS\n"
   if [ -n "${RCPT_TO}" ]; then
     email_log "Building dist artifacts failed" $BUILD_DIST_STATUS $BUILD_DIST_LOG
   fi
