@@ -298,7 +298,7 @@ END_TIME="$(date -u +%s)"
 END_TIMESTAMP="$(date -j -u -f %s $END_TIME +%Y%m%d%H%M%S)"
 
 DURATION_TIME="$(($END_TIME-$START_TIME))"
-DURATION="$(date -j -u -f %s $DURATION_TIME +%H%M%S)"
+DURATION="$(date -j -u -f %s $DURATION_TIME +%H:%M:%S)"
 
 echo -e "Build completed at ${END_TIMESTAMP} (elapsed: $DURATION).\n"
 
