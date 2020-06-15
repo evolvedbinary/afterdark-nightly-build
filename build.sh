@@ -316,5 +316,10 @@ DURATION="$(date -j -u -f %s $DURATION_TIME +%H:%M:%S)"
 
 echo -e "Build completed at ${END_TIMESTAMP} (elapsed: $DURATION).\n"
 
+# unmount smb filesystem if used
+if [ -n "${SMB_OUTPUT_SERVER}" ]; then
+  umount $TARGET_DIR
+fi
+
 # restore the cwd
 popd
