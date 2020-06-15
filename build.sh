@@ -171,7 +171,7 @@ if [ "${UNAME}" == "Darwin" ]; then
   if [ -n "${UNLOCK_MAC_CREDS_FILE}" ]; then
     UNLOCK_MAC_CREDS=$(<$UNLOCK_MAC_CREDS_FILE)
 
-    security unlock -p $UNLOCK_MAC_CREDS
+    security unlock-keychain -p "${UNLOCK_MAC_CREDS}" $HOME/Library/Keychains/login.keychain-db
   fi  
 fi
 
