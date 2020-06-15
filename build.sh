@@ -15,8 +15,6 @@ TARGET_DIR="${BUILD_ROOT_DIR}/target"
 
 MAX_DAYS=8  # number of days to keep nightlies for
 
-GENERATE_HTML_TABLE="TRUE"
-
 ## stop on first error!
 set -e
 
@@ -46,10 +44,6 @@ do
     ;;
     -c|--cleanup)
     CLEANUP="TRUE"
-    shift
-    ;;
-    --no-html-table)
-    GENERATE_HTML_TABLE="FALSE"
     shift
     ;;
     --git-repo)
@@ -248,7 +242,7 @@ fi
 # count again all the dist artifacts
 UPDATED_DIST_ARTIFACTS_COUNT=$(ls -1q $TARGET_DIR/* | wc -l)
 
-# Only cleanup old artifacts and update the table if there are new dist artifacts
+# Only cleanup old artifacts if there are new dist artifacts
 if [[ $DIST_ARTIFACTS_COUNT != $UPDATED_DIST_ARTIFACTS_COUNT ]]; then
 
   # cleanup old dist artifacts
@@ -274,32 +268,6 @@ if [[ $DIST_ARTIFACTS_COUNT != $UPDATED_DIST_ARTIFACTS_COUNT ]]; then
         umount $TARGET_DIR
       fi
       exit 4
-    fi
-  fi
-
-  if [ "${GENERATE_HTML_TABLE}" = "TRUE" ]; then
-    # generate python html table for dist artifacts
-    BUILD_DIST_HTML_LOG="${LOG_DIR}/build-dist-html.${TIMESTAMP}.log"
-    echo -e "Building dist HTML table, log file: $BUILD_DIST_HTML_LOG ...\n"
-    set +e
-    ${SCRIPT_DIR}/generate-dist-html-table.py \
-    	--build-dir "$SRC_DIR" \
-    	--output-dir "$TARGET_DIR" \
-    	> $BUILD_DIST_HTML_LOG 2>&1
-    BUILD_DIST_HTML_STATUS=$?
-    set -e
-    if [ $BUILD_DIST_HTML_STATUS -eq 0 ]; then
-      echo -e "OK.\n"
-      rm $BUILD_DIST_HTML_LOG
-    else
-      echo -e "Error: Failed to build dist HTML table. status: $BUILD_DIST_HTML_STATUS\n"
-      if [ -n "${RCPT_TO}" ]; then
-        email_log "Building dist HTML table failed" $BUILD_DIST_HTML_STATUS $BUILD_DIST_HTML_LOG
-      fi
-      if [ -n "${SMB_OUTPUT_SERVER}" ]; then
-        umount $TARGET_DIR
-      fi
-      exit 6
     fi
   fi
 
