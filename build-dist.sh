@@ -208,7 +208,13 @@ if [ ! -n "$SKIP_BUILD" ]; then
     $(cat *$TIMESTAMP*.sha256 > $COMPOSITE_SHA256_FILE_NAME)
     popd
 
-    # store the revision of the build (for next time...)
+    # store a revision file - so the HTML display knows the commit
+    REVISION_FILE="${COMPOSITE_SHA256_FILE_NAME/.sha256/.revision}"
+    pushd $BUILD_TARGET_DIR
+    echo "${CURRENT_REV}" > $REVISION_FILE
+    popd     
+
+    # store the revision of the build (for next time... so we can determine if there are changes to build)
     echo "${CURRENT_REV}" > .nightly-build-prev-rev
 
   else
