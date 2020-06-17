@@ -91,8 +91,10 @@ cpbl() {
     out_file=$out_dir/$out_file_name
 
     cp -v $in_file $out_file
-    pushd $out_dir
-    openssl sha256 -r $out_file_name > $out_file_name.sha256
+   
+    local in_dir=$(dirname $in_file)
+    pushd $in_dir
+    openssl sha256 -r $out_file_name > $out_file.sha256
     popd
 }
 
