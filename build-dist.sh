@@ -202,6 +202,9 @@ if [ ! -n "$SKIP_BUILD" ]; then
       cpbl fusiondb-server-distribution/fusiondb-server-rpm/target/fusiondb-server-*.rpm $BUILD_TARGET_DIR
     fi
 
+    # remove any Mac fork files (created when copying to non-apple fs)
+    find $BUILD_TARGET_DIR -type f -name '._*' -delete
+
     # store a composite sha256 file
     COMPOSITE_SHA256_FILE_NAME=$(ls $BUILD_TARGET_DIR/*$TIMESTAMP.dmg)
     COMPOSITE_SHA256_FILE_NAME=$(basename $COMPOSITE_SHA256_FILE_NAME)
