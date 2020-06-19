@@ -46,7 +46,7 @@ pushd $TARGET_DIR
 TABLE_ROWS=()
 
 # find unique builds from sha256 files
-SHA256_BUILD_FILES=$(find . -regextype posix-egrep -regex ".+[0-9]{14}.sha256$")
+SHA256_BUILD_FILES=$(find . -regextype posix-egrep -regex ".+[0-9]{14}.sha256$" | sort -nr)
 for SHA256_BUILD_FILE in $SHA256_BUILD_FILES
 do
   TIMESTAMP="$(echo $SHA256_BUILD_FILE | sed -e 's/.\+\([0-9]\{14\}\).sha256$/\1/g')"
