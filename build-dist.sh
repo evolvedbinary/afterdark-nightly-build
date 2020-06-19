@@ -77,24 +77,30 @@ done
 # and adds a sha256 checksum file
 cpbl() {
     local in_file=$1
+    local in_dir=$(dirname $in_file)
+    local in_file_name=$(basename $in_file)
     local out_dir=$2
-    local out_file_name=$(basename $in_file)
+    local out_file_name=$in_file_name
 
-    if [[ $in_file == *"SNAPSHOT-unix"* ]]; then
+    if [[ $in_file_name == *"SNAPSHOT-unix"* ]]; then
         out_file_name=${out_file_name/SNAPSHOT-unix/SNAPSHOT-unix+$TIMESTAMP}
-    elif [[ $in_file == *"SNAPSHOT-win"* ]]; then
+    elif [[ $in_file_name == *"SNAPSHOT-win"* ]]; then
         out_file_name=${out_file_name/SNAPSHOT-win/SNAPSHOT-win+$TIMESTAMP}
-    elif [[ $in_file == *"SNAPSHOT"* ]]; then
+    elif [[ $in_file_name == *"SNAPSHOT"* ]]; then
         out_file_name=${out_file_name/SNAPSHOT/SNAPSHOT+$TIMESTAMP}
     fi
 
-    out_file=$out_dir/$out_file_name
-
-    cp -v $in_file $out_file
-   
-    local in_dir=$(dirname $in_file)
     pushd $in_dir
-    openssl sha256 -r $out_file_name > $out_file.sha256
+    if [[ "${in_file_name}" != "${out_file_name}" ]]; then
+        cp -v $in_file_name $out_file_name
+    fi
+    openssl sha256 -r $out_file_name > $out_file_name.sha256
+    if [[ "${in_file_name}" != "${out_file_name}" ]]; then
+        mv -v $out_file_name $out_dir
+    else
+        cp -v $out_file_name $out_dir
+    fi
+    mv -v $out_file_name.sha256 $out_dir
     popd
 }
 
