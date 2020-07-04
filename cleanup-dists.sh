@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
 ##
-# Cleans up FusionDB or eXist-db dist artifacts that are older than N days
+# Cleans up FusionDB or eXist-db dist artifacts that are more
+# than NUMBER_TO_KEEP artifacts
 ##
 
 ## Defaults. Can be overriden by command line
-## args --output-dir and/or --days
+## args --output-dir and/or --number-to-keep
 BUILD_DIR="/nightly/dist"
 OUTPUT_DIR="${BUILD_DIR}/target"
-DAYS=15
+NUMBER_TO_KEEP=14
 
 ## stop on first error!
 set -e
@@ -20,8 +21,8 @@ set -x
 for i in "$@"
 do
   case $i in
-    -d|--days)
-    DAYS=$2
+    -n|--number-to-keep)
+    NUMBER_TO_KEEP=$2
     shift
     ;;
     -o|--output-dir)
@@ -34,7 +35,24 @@ do
   esac
 done
 
-## cleanup any nightly builds (.dmg, .jar, .zip, tar.bz2, .exe, .deb .rpm .sha256, .revision files) that are older than DAYS
 if [ -d "${OUTPUT_DIR}" ]; then
-  find $OUTPUT_DIR -mtime +$DAYS -type f \( -iname "*.dmg" -or -iname "*.jar" -or -iname "*.zip" -or -iname "*.tar.bz2" -or -iname "*.exe" -or -iname "*.deb" -or -iname "*.rpm" -or -iname "*.sha256" -or -iname "*.revision" \) -exec rm {} \;
+
+  # find unique builds from sha256 files (in descending order)
+  SHA256_BUILD_FILES=$(find -E "${OUTPUT_DIR}" -regex ".+[0-9]{14}.sha256$" | sort -nr)
+  SHA256_BUILD_FILES=($SHA256_BUILD_FILES)  # convert to array
+  LENGTH=${#SHA256_BUILD_FILES[@]}
+
+  echo "Found ${LENGTH} artifacts, keeping ${NUMBER_TO_KEEP}..."
+
+  if [[ $LENGTH -gt $NUMBER_TO_KEEP ]] ; then
+    TRIM_LENGTH=`expr $LENGTH - $NUMBER_TO_KEEP`
+    OLD_SHA256_BUILD_FILES=(${SHA256_BUILD_FILES[@]:$NUMBER_TO_KEEP:TRIM_LENGTH})
+
+    for OLD_SHA256_BUILD_FILE in ${OLD_SHA256_BUILD_FILES[@]}
+    do
+      TIMESTAMP="$(echo $OLD_SHA256_BUILD_FILE | sed -e 's/.*\([0-9]\{14\}\).sha256$/\1/g')"
+      find "${OUTPUT_DIR}" -type f -name "*${TIMESTAMP}*" -exec rm -vf {} \;
+    done
+  fi
+
 fi

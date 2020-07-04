@@ -13,7 +13,7 @@ BUILD_ROOT_DIR="${BUILD_ROOT_DIR}/dist"
 SRC_DIR="${BUILD_ROOT_DIR}/source"
 TARGET_DIR="${BUILD_ROOT_DIR}/target"
 
-MAX_DAYS=8  # number of days to keep nightlies for
+MAX_ARTIFACTS=14  # number of days to keep nightlies for
 
 ## stop on first error!
 set -e
@@ -252,7 +252,7 @@ if [[ $DIST_ARTIFACTS_COUNT != $UPDATED_DIST_ARTIFACTS_COUNT ]]; then
     set +e
     ${SCRIPT_DIR}/cleanup-dists.sh \
             --output-dir "$TARGET_DIR" \
-            --days $MAX_DAYS \
+            --number-to-keep $MAX_ARTIFACTS \
             > $CLEAN_DIST_LOG 2>&1
     CLEAN_DIST_STATUS=$?
     set -e
