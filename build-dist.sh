@@ -67,6 +67,14 @@ case $i in
     TIMESTAMP="$2"
     shift
     ;;
+    --docker-tag)
+    DOCKER_TAG="$2"
+    shift
+    ;;
+    --docker-registry)
+    DOCKER_REGISTRY="$2"
+    shift
+    ;;
     *)  # unknown option
     shift
     ;;
@@ -190,7 +198,11 @@ if [ ! -n "$SKIP_BUILD" ]; then
   if [[ $PREV_REV != $CURRENT_REV ]]; then
 
     # actually do the build and deploy of Maven artifacts
-    mvn -V -T 2C deploy -Dlicense.skip=true -Dmdep.analyze.skip=true -DskipTests -Ddependency-check.skip=true -Ddocker=false -Dmaven.install.skip=true -Dbintray.skip=true -Dmac-signing=true -Dizpack-signing=true -Drpm.snapshotBuildId=$TIMESTAMP -P !concurrency-stress-tests,!micro-benchmarks
+    if [ -n "$DOCKER_TAG" ]; then
+      mvn -V -T 2C deploy -Dnsis.makensis.executable.macos=$HOME/nsis/bin/makensis -Dlicense.skip=true -Dmdep.analyze.skip=true -DskipTests -Ddependency-check.skip=true -Ddocker=true -Ddocker.tag=$DOCKER_TAG -Ddocker.registry=$DOCKER_REGISTRY -Dmaven.install.skip=true -Dbintray.skip=true -Dmac-signing=true -Dizpack-signing=true -Drpm.snapshotBuildId=$TIMESTAMP -P !concurrency-stress-tests,!micro-benchmarks
+    else
+      mvn -V -T 2C deploy -Dnsis.makensis.executable.macos=$HOME/nsis/bin/makensis -Dlicense.skip=true -Dmdep.analyze.skip=true -DskipTests -Ddependency-check.skip=true -Ddocker=false -Dmaven.install.skip=true -Dbintray.skip=true -Dmac-signing=true -Dizpack-signing=true -Drpm.snapshotBuildId=$TIMESTAMP -P !concurrency-stress-tests,!micro-benchmarks
+    fi
 
     # copy the built artifacts to the output dir
     mkdir -p $BUILD_TARGET_DIR

@@ -78,6 +78,14 @@ do
     SKIP_GIT_REV_CHECK="TRUE"
     shift
     ;;
+    --docker-tag)
+    DOCKER_TAG="$2"
+    shift
+    ;;
+    --docker-registry)
+    DOCKER_REGISTRY="$2"
+    shift
+    ;;
     --log-dir)
     LOG_DIR="$2"
     shift
@@ -219,6 +227,8 @@ ${SCRIPT_DIR}/build-dist.sh \
 	${GIT_RESET:+ --git-reset} \
 	${GIT_STASH:+ --git-stash} \
 	${SKIP_GIT_REV_CHECK:+ --skip-git-rev-check} \
+        ${DOCKER_TAG:+ --docker-tag "${DOCKER_TAG}"} \
+        ${DOCKER_REGISTRY:+ --docker-registry "${DOCKER_REGISTRY}"} \
 	--timestamp "$TIMESTAMP" \
 	--build-dir "$SRC_DIR" \
 	--output-dir "$TARGET_DIR" \
