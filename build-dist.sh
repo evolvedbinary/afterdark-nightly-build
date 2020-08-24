@@ -167,7 +167,7 @@ else
 	pushd ${BUILD_SRC_DIR}
 
 	# clean any lingering artifacts from a previous build of the source code
-	mvn clean
+	mvn clean -Ddocker=true
 
 	# update the source from the git repo
 	if [ -n "${GIT_STASH}" ]; then
