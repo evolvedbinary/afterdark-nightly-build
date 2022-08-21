@@ -11,7 +11,7 @@ BUILD_ROOT_DIR="/nightly/dist"
 BUILD_SRC_DIR="${BUILD_ROOT_DIR}/source"
 BUILD_TARGET_DIR="${BUILD_ROOT_DIR}/target"
 
-GIT_REPO="git@github.com:eXist-db/exist.git"
+GIT_REPO="git@github.com:evolvedbinary/fusiondb-server.git"
 GIT_BRANCH="develop"
 
 ## stop on first error!
@@ -191,8 +191,12 @@ if [ ! -n "$SKIP_BUILD" ]; then
 
   CURRENT_REV=$(git rev-parse --short=7 HEAD)
   PREV_REV="NONE"
-  if [ ! -n "$SKIP_GIT_REV_CHECK" ] && [[ -f ".nightly-build-prev-rev" ]]; then
-    PREV_REV=$(<.nightly-build-prev-rev)
+  if [ ! -n "$SKIP_GIT_REV_CHECK" ]; then
+    pushd ..  # nightly-build-prev-rev file should live in the parent of the BUILD_SRC_DIR
+    if [[ -f ".nightly-build-prev-rev" ]]; then
+      PREV_REV=$(<.nightly-build-prev-rev)
+    fi
+    popd
   fi
 
   if [[ $PREV_REV != $CURRENT_REV ]]; then
@@ -238,7 +242,9 @@ if [ ! -n "$SKIP_BUILD" ]; then
     popd     
 
     # store the revision of the build (for next time... so we can determine if there are changes to build)
+    pushd ..  # nightly-build-prev-rev file should live in the parent of the BUILD_SRC_DIR
     echo "${CURRENT_REV}" > .nightly-build-prev-rev
+    popd
 
   else
     echo -e "\n\nSkipping build (PREV_REV=${PREV_REV} and CURRENT_REV=${CURRENT_REV}, no changes!)...\n"
