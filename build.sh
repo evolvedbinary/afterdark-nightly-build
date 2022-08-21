@@ -19,7 +19,7 @@ MAX_ARTIFACTS=14  # number of days to keep nightlies for
 set -e
 
 ## uncomment the line below for debugging this script!
- set -x
+set -x
 
 # determine the directory that this script is in
 pushd `dirname $0` > /dev/null
