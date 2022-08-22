@@ -91,7 +91,7 @@ SCRIPT_DIR=`pwd -P`
 popd > /dev/null
 
 # run the build on the remote SSH host
-ssh $AD_REMOTE_SSH_USER@$AD_REMOTE_SSH_HOST 'export SOURCE_GIT_REPO='"'$SOURCE_GIT_REPO'"' SOURCE_GIT_BRANCH='"'$SOURCE_GIT_BRANCH'"' BUILD_DIR_NAME='"'$BUILD_DIR_NAME'"' AD_SMB_OUTPUT_SERVER='"'$AD_SMB_OUTPUT_SERVER'"'; ~/afterdark-nightly-build/ssh.receiver.nightly.sh'
+ssh $AD_REMOTE_SSH_USER@$AD_REMOTE_SSH_HOST 'export SOURCE_GIT_REPO='"'$SOURCE_GIT_REPO'"' SOURCE_GIT_BRANCH='"'$SOURCE_GIT_BRANCH'"' BUILD_DIR_NAME='"'$BUILD_DIR_NAME'"' AD_SMB_OUTPUT_SERVER='"'$AD_SMB_OUTPUT_SERVER'"'; ~/afterdark-nightly-build/ssh.receiver.nightly.run.sh'
 
 # generate the HTML table rows
 ${SCRIPT_DIR}/generate-html-rows.sh --git-repo "${DISPLAY_GIT_REPO}" --output-dir "/www-data/www.evolvedbinary.com/afterdark/${BUILD_DIR_NAME}/" --link-prefix "afterdark/${BUILD_DIR_NAME}/" --output-file "/tmp/${TABLE_FILE_NAME}"
